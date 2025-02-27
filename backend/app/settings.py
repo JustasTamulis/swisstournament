@@ -117,7 +117,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:9000",
     "http://127.0.0.1:5173",
     "http://localhost:5173",
-    "https://safe-bastion-25931-8818d1c4d653.herokuapp.com/",
+    "https://safe-bastion-25931-8818d1c4d653.herokuapp.com",
 ]
 
 ROOT_URLCONF = "backend.app.urls"

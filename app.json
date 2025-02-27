@@ -1,0 +1,20 @@
+{
+  "name": "Pizzapp",
+  "description": "A mash up test of django, react, and heroku",
+  "repository": "https://github.com/heroku/python-getting-started",
+  "website": "https://devcenter.heroku.com/articles/getting-started-with-python",
+  "keywords": ["python", "django", "react"],
+  "env": {
+    "DJANGO_SECRET_KEY": {
+      "description": "The secret key for the Django application.",
+      "generator": "secret"
+    }
+  },
+  "environments": {
+    "test": {
+      "scripts": {
+        "test": "./backend/manage.py test --debug-mode"
+      }
+    }
+  }
+}

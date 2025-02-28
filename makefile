@@ -28,3 +28,6 @@ install: .state/pyvenv ## Install Python dependencies
 	# Mark the state so we don't reinstall needlessly
 	mkdir -p .state
 	touch .state/pyvenv
+
+front: ## Run the frontend
+	cd frontend && npm run dev

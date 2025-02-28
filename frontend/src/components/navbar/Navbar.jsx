@@ -27,10 +27,10 @@ export default function Navbar({ content }) {
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <IconButton onClick={changeMenu} sx={{marginRight:'35px', color:'white'}}>
-                        {isBigMenu ? <MenuOpenIcon/> : <MenuIcon/>}
+                    <IconButton onClick={changeMenu} sx={{ marginRight: '35px', color: 'white' }}>
+                        {isBigMenu ? <MenuOpenIcon /> : <MenuIcon />}
                     </IconButton>
-                    <img style={{ width: '10%' }} src={Logo} />
+                    <img style={{ width: 50 }} src={Logo} />
                 </Toolbar>
             </AppBar>
             <Drawer

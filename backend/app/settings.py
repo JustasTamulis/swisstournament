@@ -93,7 +93,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "api",
+    "backend.api",
 ]
 
 MIDDLEWARE = [
@@ -120,7 +120,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://safe-bastion-25931-8818d1c4d653.herokuapp.com",
 ]
 
-ROOT_URLCONF = "app.urls"
+ROOT_URLCONF = "backend.app.urls"
 
 TEMPLATES = [
     {
@@ -138,7 +138,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "app.wsgi.application"
+WSGI_APPLICATION = "backend.app.wsgi.application"
 
 
 # Database

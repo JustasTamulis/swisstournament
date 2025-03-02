@@ -4,8 +4,14 @@ VERSION=3.12.7
 VENV_DIR=$(shell pyenv root)/versions/${VENV}
 VENV=${PROJECT}-${VERSION}
 
+
+
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+
+########################################################################################
+## Setup commands
 
 clean: ## clean virtualenv
 	rm -rf .state
@@ -29,8 +35,21 @@ install: .state/pyvenv ## Install Python dependencies
 	mkdir -p .state
 	touch .state/pyvenv
 
+
+########################################################################################
+## Hero commands
+
+deploy: ## Deploy to Heroku
+	git push heroku master
+
+########################################################################################
+## Frontend commands
+
 front: ## Run the frontend
 	cd frontend && npm run dev
+
+########################################################################################
+## Django commands
 
 run: ## Run Django development server
 	python backend/manage.py runserver

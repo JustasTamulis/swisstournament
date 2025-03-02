@@ -16,14 +16,11 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
-
-import backend.api.views
+from django.urls import path, include
 
 urlpatterns = [
-    path("", backend.api.views.index, name="index"),
-    path("hello/", backend.api.views.hello, name="hello"),
-    # Uncomment this and the entry in `INSTALLED_APPS` if you wish to use the Django admin feature:
-    # https://docs.djangoproject.com/en/5.1/ref/contrib/admin/
+    # path("", backend.api.views.index, name="index"),
+    # path("hello/", backend.api.views.hello, name="hello"),
     path("admin/", admin.site.urls),
+    path('',include('backend.api.urls'))
 ]

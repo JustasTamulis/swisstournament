@@ -1,30 +1,59 @@
 import requests
 import os
 from django.http import HttpResponse
-
 from django.shortcuts import render
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
 
-from .models import Greeting
+from .models import Greeting, Country, League, Characteristic, FootballClub
+from .serializers import (
+    CountrySerializer,
+    LeagueSerializer,
+    CharacteristicSerializer,
+    FootballClubSerializer,
+)
 
-# Create your views here.
 
+class CountryViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
 
-# def index(request):
-#     r = requests.get('https://httpbin.org/status/418', timeout=10)
-#     return HttpResponse('<pre>' + r.text + '</pre>')
+    def list(self, request):
+        queryset = Country.objects.all()
+        serializer = CountrySerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+
+class LeagueViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    queryset = League.objects.all()
+    serializer_class = LeagueSerializer
+
+    def list(self, request):
+        queryset = League.objects.all()
+        serializer = LeagueSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+
+class CharacteristicViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    queryset = Characteristic.objects.all()
+    serializer_class = CharacteristicSerializer
+
+    def list(self, request):
+        queryset = Characteristic.objects.all()
+        serializer = CharacteristicSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 def index(request):
-    # When running the app locally:
-    #   1. You have run `./manage.py migrate` to create the database table.
-
     greeting = Greeting()
     greeting.save()
-
     greetings = Greeting.objects.all()
-
     return render(request, "db.html", {"greetings": greetings})
 
+
 def hello(request):
-    times = int(os.environ.get('TIMES', 3))
-    return HttpResponse('Hello! ' * times)
+    times = int(os.environ.get("TIMES", 3))
+    return HttpResponse("Hello! " * times)

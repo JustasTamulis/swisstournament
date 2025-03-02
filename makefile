@@ -51,20 +51,23 @@ front: ## Run the frontend
 ########################################################################################
 ## Django commands
 
-run: ## Run Django development server
+collectstatic: ## Collect static files
+	python backend/manage.py collectstatic --noinput
+
+run: collectstatic ## Run Django development server
 	python backend/manage.py runserver
 
-migrate: ## Apply database migrations
-    python backend/manage.py migrate
-
 makemigrations: ## Create new database migrations
-    python backend/manage.py makemigrations
+	python backend/manage.py makemigrations
+
+migrate: ## Apply database migrations
+	python backend/manage.py migrate
 
 shell: ## Open Django shell
-    python backend/manage.py shell
+	python backend/manage.py shell
 
 admin: ## Create a superuser
-    python backend/manage.py createsuperuser
+	python backend/manage.py createsuperuser
 
 test: ## Run Django tests
-    python backend/manage.py test
+	python backend/manage.py test

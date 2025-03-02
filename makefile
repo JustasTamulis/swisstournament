@@ -31,3 +31,21 @@ install: .state/pyvenv ## Install Python dependencies
 
 front: ## Run the frontend
 	cd frontend && npm run dev
+
+run: ## Run Django development server
+	python backend/manage.py runserver
+
+migrate: ## Apply database migrations
+    python backend/manage.py migrate
+
+makemigrations: ## Create new database migrations
+    python backend/manage.py makemigrations
+
+shell: ## Open Django shell
+    python backend/manage.py shell
+
+admin: ## Create a superuser
+    python backend/manage.py createsuperuser
+
+test: ## Run Django tests
+    python backend/manage.py test

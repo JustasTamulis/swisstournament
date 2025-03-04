@@ -1,7 +1,7 @@
 import * as React from 'react';
 import TextField from '@mui/material/TextField';
 
-export default function MultilineTextFields({label, rows, value, name, onChange, onBlur}) {
+export default function MultilineTextFields({label, rows, value, name, onChange, onBlur, error, helperText}) {
   return (
     <TextField
         id="outlined-multiline-static"
@@ -13,6 +13,8 @@ export default function MultilineTextFields({label, rows, value, name, onChange,
         name = {name}
         onChange = {onChange}
         onBlur = {onBlur}
+        error = {error}
+        helperText = {helperText}
     />
   );
 }

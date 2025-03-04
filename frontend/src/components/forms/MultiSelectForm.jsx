@@ -8,6 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Chip from '@mui/material/Chip';
 import { __unsafe_useEmotionCache } from '@emotion/react';
+import FormHelperText from '@mui/material/FormHelperText';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -21,7 +22,7 @@ const MenuProps = {
 };
 
 
-export default function MultipleSelectForm({label, options, value, name, onChange, onBlur}) {
+export default function MultipleSelectForm({label, options, value, name, onChange, onBlur, error, helperText}) {
   const theme = useTheme();
 
   return (
@@ -36,6 +37,8 @@ export default function MultipleSelectForm({label, options, value, name, onChang
           name = {name}
           onChange = {onChange}
           onBlur = {onBlur}
+          error = {error}
+          helperText = {helperText}
           input={<OutlinedInput id="select-multiple-chip" label={label} />}
           renderValue={(selected) => (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -56,6 +59,7 @@ export default function MultipleSelectForm({label, options, value, name, onChang
             </MenuItem>
           ))}
         </Select>
+        <FormHelperText error>{helperText}</FormHelperText>
       </FormControl>
     </div>
   );

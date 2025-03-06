@@ -5,7 +5,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .models import Greeting, Country, League, Characteristic, FootballClub
+from .models import Country, League, Characteristic, FootballClub
 from .serializers import (
     CountrySerializer,
     LeagueSerializer,

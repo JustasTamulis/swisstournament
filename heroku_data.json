@@ -1,6 +1,3 @@
-STATIC_ROOT /home/justas/tournament/backend/staticfiles
-STATIC_URL assets/
-STATICFILES_DIRS ['/home/justas/tournament/static/assets', '/home/justas/tournament/static']
 [
 {
   "model": "admin.logentry",

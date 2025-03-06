@@ -60,22 +60,28 @@ collectstatic: ## Collect static files
 back: ## Run Django development server
 	cd backend && python manage.py runserver
 
+
+########################################################################################
+## Database related
+
 makemigrations: ## Create new database migrations
 	python backend/manage.py makemigrations
 
 migrate: ## Apply database migrations
 	python backend/manage.py migrate
 
-shell: ## Open Django shell
-	python backend/manage.py shell
-
 admin: ## Create a superuser
 	python backend/manage.py createsuperuser
 
-test: ## Run Django tests
-	python backend/manage.py test
+data_to_heroku: ## Load data to Heroku
+	python backend/manage.py dumpdata api --indent 2 > heroku_db_data.json
+	git add heroku_db_data.json
+	git commit -m "Update heroku_db_data.json"
+	git push heroku master
+	heroku run python backend/manage.py loaddata heroku_db_data.json
 
 ########################################################################################
 ## 
 
 run: buildfront collectstatic back ## Run the full stack
+

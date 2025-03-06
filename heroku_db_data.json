@@ -1,0 +1,63 @@
+[
+{
+  "model": "api.country",
+  "pk": 1,
+  "fields": {
+    "name": "Georgia",
+    "created": "2025-03-06T12:12:47.546Z",
+    "modified": "2025-03-06T12:12:47.546Z"
+  }
+},
+{
+  "model": "api.league",
+  "pk": 1,
+  "fields": {
+    "name": "FInlandia",
+    "created": "2025-03-06T12:12:41.908Z",
+    "modified": "2025-03-06T12:12:41.908Z"
+  }
+},
+{
+  "model": "api.characteristic",
+  "pk": 1,
+  "fields": {
+    "name": "pizzaleague",
+    "created": "2025-03-06T12:12:50.581Z",
+    "modified": "2025-03-06T12:12:50.581Z"
+  }
+},
+{
+  "model": "api.footballclub",
+  "pk": 1,
+  "fields": {
+    "name": "FInlandia",
+    "description": "dsds",
+    "attendance": 22,
+    "city": "fsfsf",
+    "country": 1,
+    "league": 1,
+    "created": "2025-03-06T12:13:05.942Z",
+    "modified": "2025-03-06T12:13:05.943Z",
+    "characteristic": [
+      1
+    ]
+  }
+},
+{
+  "model": "api.footballclub",
+  "pk": 2,
+  "fields": {
+    "name": "zalgirisafaf",
+    "description": "fsdfsf",
+    "attendance": 333,
+    "city": "sdfsfsf",
+    "country": 1,
+    "league": 1,
+    "created": "2025-03-06T12:13:52.669Z",
+    "modified": "2025-03-06T12:13:52.669Z",
+    "characteristic": [
+      1
+    ]
+  }
+}
+]

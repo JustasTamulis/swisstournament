@@ -48,14 +48,17 @@ deploy: ## Deploy to Heroku
 front: ## Run the frontend
 	cd frontend && npm run dev
 
+buildfront: ## Build the frontend
+	cd frontend && npm run build
+
 ########################################################################################
 ## Django commands
 
 collectstatic: ## Collect static files
-	python backend/manage.py collectstatic --noinput
+	cd backend && python manage.py collectstatic --noinput
 
-run: collectstatic ## Run Django development server
-	python backend/manage.py runserver
+back: ## Run Django development server
+	cd backend && python manage.py runserver
 
 makemigrations: ## Create new database migrations
 	python backend/manage.py makemigrations
@@ -71,3 +74,8 @@ admin: ## Create a superuser
 
 test: ## Run Django tests
 	python backend/manage.py test
+
+########################################################################################
+## 
+
+run: buildfront collectstatic back ## Run the full stack

@@ -65,14 +65,20 @@ class FootballClubViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=400)
     
 
+def serve_react_app(request, path=''):
+    """
+    Serve the React app for any route not captured by API
+    """
+    print("path:", path)
+    print("request:", request)
+    try:
+        return render(request, "index.html")
+    except Exception as e:
+        print(str(e))
+        return HttpResponse(f"Error serving React app: {str(e)}", status=500)
 
-def index(request):
-    greeting = Greeting()
-    greeting.save()
-    greetings = Greeting.objects.all()
-    return render(request, "db.html", {"greetings": greetings})
+from django.views.generic import TemplateView
 
-
-def hello(request):
-    times = int(os.environ.get("TIMES", 3))
-    return HttpResponse("Hello! " * times)
+# React home page
+class React(TemplateView):
+    template_name = 'index.html'

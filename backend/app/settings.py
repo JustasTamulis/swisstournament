@@ -18,6 +18,7 @@ import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 # Before using your Heroku app in production, make sure to review Django's deployment checklist:
@@ -117,16 +118,21 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:9000",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
     "http://localhost:5173",
     "https://safe-bastion-25931-8818d1c4d653.herokuapp.com",
 ]
 
 ROOT_URLCONF = "backend.app.urls"
 
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            str(BASE_ROOT.joinpath('static')),
+            # os.path.join(root_dir, 'frontend', 'dist', 'assets'),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -201,24 +207,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATIC_URL = "static/"
-
-STORAGES = {
-    # Enable WhiteNoise's GZip and Brotli compression of static assets:
-    # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
-
-# Don't store the original (un-hashed filename) version of static files, to reduce slug size:
-# https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
-WHITENOISE_KEEP_ONLY_HASHED_FILES = True
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -263,3 +251,38 @@ LOGGING = {
         },
     },
 }
+
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+# root_dir = Path(__file__).resolve().parent.parent.parent
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATIC_URL = "assets/"
+STATICFILES_DIRS = [
+    # os.path.join(root_dir, 'frontend', 'dist', 'assets'),
+    os.path.join(BASE_ROOT, 'static', 'assets'),
+    os.path.join(BASE_ROOT, 'static'),
+]
+
+STORAGES = {
+    # Enable WhiteNoise's GZip and Brotli compression of static assets:
+    # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
+    "staticfiles": {
+        # "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        # "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+# Don't store the original (un-hashed filename) version of static files, to reduce slug size:
+# https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
+# WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+
+print("STATIC_ROOT", STATIC_ROOT)
+print("STATIC_URL", STATIC_URL)
+print("STATICFILES_DIRS", STATICFILES_DIRS)

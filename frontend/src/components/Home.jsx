@@ -2,12 +2,23 @@ import {React, useEffect, useMemo,useState} from 'react'
 import {Box, Chip, Typography} from '@mui/material'
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth';
 import {MaterialReactTable} from 'material-react-table';
+import {useSearchParams} from 'react-router';
 import AxiosInstance from './Axios';
 
 
 const Home = () =>{
 
     const [myData, setMyData] = useState([])
+    const [searchParams] = useSearchParams();
+
+    // Read query parameters
+    useEffect(() => {
+        // Log all query parameters
+        console.log("Query Parameters:");
+        for (const [key, value] of searchParams.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+    }, [searchParams]);
 
     const GetData = () =>{
         AxiosInstance.get(`footballclub/`).then((res) =>{

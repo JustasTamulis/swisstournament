@@ -4,7 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import {useFormik} from "formik";
 import * as yup from "yup";
-import {useNavigate} from "react-router";
+import {useNavigate, useSearchParams} from "react-router";
 
 import TextForm from "./forms/TextForm";
 import SelectForm from "./forms/SelectForm";
@@ -17,12 +17,37 @@ const Create = () => {
     const [country, setCountry] = useState([]);
     const [league, setLeague] = useState([]);
     const [characteristic, setCharacteristic] = useState([]);
+    const [searchParams] = useSearchParams();
     const [message, setMessage] = useState([]);
     const navigate = useNavigate();
+    
+    // Utility function to navigate while preserving query parameters
+    const navigateWithParams = (path) => {
+        const currentParams = new URLSearchParams(searchParams.toString());
+        navigate({
+            pathname: path,
+            search: currentParams.toString()
+        });
+    };
+
+    // Read query parameters
+    useEffect(() => {
+        // Log all query parameters
+        console.log("Query Parameters:");
+        for (const [key, value] of searchParams.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+    }, [searchParams]);
 
     console.log(country);
     console.log(league);
     console.log(characteristic);
+
+    // Get specific parameters
+    const query_country = searchParams.get('country');
+    const query_city = searchParams.get('city');
+    if (query_country) console.log("query_country:", query_country);
+    if (query_city) console.log("query_city:", query_city);
 
     const GetData = () => {
         AxiosInstance.get("country/")
@@ -62,7 +87,7 @@ const Create = () => {
             country: '',
             league: '',
             attendance: '',
-            city: '',
+            city: query_city || '',
             characteristic: [],
         },
         validationSchema: validationSchema,
@@ -77,8 +102,9 @@ const Create = () => {
                         messageColor="green"
                     />
                 )
+                
                 setTimeout(() => {
-                    navigate("/");
+                    navigateWithParams("/");
                 }, 2000);
             })
         }

@@ -10,6 +10,7 @@ from .views import (
     RoundViewSet,
     GameViewSet,
     BetViewSet,
+    OddsViewSet
 )
 
 router = DefaultRouter()
@@ -21,5 +22,7 @@ router.register("team", TeamViewSet, basename="team")
 router.register("round", RoundViewSet, basename="round")
 router.register("game", GameViewSet, basename="game")
 router.register("bet", BetViewSet, basename="bet")
+router.register("odds", OddsViewSet, basename='odds')
+
 
 urlpatterns = router.urls

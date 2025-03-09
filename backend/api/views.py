@@ -6,7 +6,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.views.generic import TemplateView
 
-from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet
+from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds
 from .serializers import (
     CountrySerializer,
     LeagueSerializer,
@@ -16,6 +16,7 @@ from .serializers import (
     RoundSerializer,
     GameSerializer,
     BetSerializer,
+    OddsSerializer,
 )
 
 
@@ -138,6 +139,24 @@ class BetViewSet(viewsets.ViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
     
+
+class OddsViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.AllowAny]
+    queryset = Odds.objects.all()
+    serializer_class = OddsSerializer
+
+    def list(self, request):
+        queryset = Odds.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
 
 def serve_react_app(request, path=''):
     """

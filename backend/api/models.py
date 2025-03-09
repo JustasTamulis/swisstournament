@@ -74,11 +74,21 @@ class Game(models.Model):
     def __str__(self):
         return f"{self.team1} vs {self.team2} (Round {self.round.number})"
 
+class Odds(models.Model):
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    odd1 = models.FloatField()
+    odd2 = models.FloatField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.team.name} - Round {self.round.number}: {self.odd1}/{self.odd2}"
+
 class Bet(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='placed_bets')
     bet_on_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='received_bets')
-    odd1 = models.FloatField()  # Odd for the first team
-    odd2 = models.FloatField()  # Odd for the second team
+    odds = models.ForeignKey(Odds, on_delete=models.CASCADE, related_name='bets')
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='bets')
     bet_finish = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)

@@ -1,7 +1,3 @@
-import requests
-import os
-from django.http import HttpResponse
-from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.views.generic import TemplateView
@@ -156,19 +152,6 @@ class OddsViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-
-
-def serve_react_app(request, path=''):
-    """
-    Serve the React app for any route not captured by API
-    """
-    print("path:", path)
-    print("request:", request)
-    try:
-        return render(request, "index.html")
-    except Exception as e:
-        print(str(e))
-        return HttpResponse(f"Error serving React app: {str(e)}", status=500)
 
 
 # React home page

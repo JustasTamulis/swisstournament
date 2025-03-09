@@ -96,3 +96,14 @@ class Bet(models.Model):
 
     def __str__(self):
         return f"Bet: {self.team} on {self.bet_on_team} (Round {self.round.number})"
+
+class Bonus(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='bonuses')
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='bonuses')
+    finished = models.BooleanField(default=False)
+    description = models.CharField(max_length=255)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bonus for {self.team.name} in Round {self.round.number}"

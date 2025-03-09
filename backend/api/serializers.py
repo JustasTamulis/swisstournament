@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Odds, Bet
+from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Odds, Bet, Bonus
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -63,4 +63,12 @@ class BetSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Bet
+        fields = '__all__'
+
+class BonusSerializer(serializers.ModelSerializer):
+    team_details = TeamSerializer(source='team', read_only=True)
+    round_details = RoundSerializer(source='round', read_only=True)
+    
+    class Meta:
+        model = Bonus
         fields = '__all__'

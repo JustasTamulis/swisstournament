@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds
+from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds, Bonus
 
 # Register your models here.
 admin.site.register(Country)
@@ -11,3 +11,4 @@ admin.site.register(Round)
 admin.site.register(Game)
 admin.site.register(Bet)
 admin.site.register(Odds)
+admin.site.register(Bonus)

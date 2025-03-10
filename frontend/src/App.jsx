@@ -26,11 +26,11 @@ function App() {
           <TopNav
             content={
               <Routes>
-                {/* Default route redirects to joust */}
-                <Route path="" element={<JoustPage />} />
-                <Route path="joust" element={<JoustPage />} />
-                <Route path="bet" element={<BetPage />} />
+                {/* Default route redirects to track now */}
+                <Route path="" element={<TrackPage />} />
                 <Route path="track" element={<TrackPage />} />
+                <Route path="bet" element={<BetPage />} />
+                <Route path="joust" element={<JoustPage />} />
                 <Route path="bonus" element={<BonusPage />} />
                 <Route path="about" element={<AboutPage />} />
               </Routes>

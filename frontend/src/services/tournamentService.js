@@ -146,4 +146,14 @@ export const getBonusForTeam = async (teamId, roundId) => {
     }
 };
 
+export const getBettingTable = async (identifier, roundId) => {
+    try {
+        const response = await tournamentApi.get(`get-betting-table/?identifier=${identifier}&round_id=${roundId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching betting table data:", error);
+        throw error;
+    }
+};
+
 export default tournamentApi;

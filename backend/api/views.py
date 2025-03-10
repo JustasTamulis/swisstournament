@@ -100,6 +100,12 @@ class TeamViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = Team.objects.all()
+        
+        # Get identifier from query params and filter if provided
+        identifier = request.query_params.get('identifier', None)
+        if identifier:
+            queryset = queryset.filter(identifier=identifier)
+            
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
     
@@ -426,6 +432,76 @@ def use_bonus(request):
         return Response({
             'message': f'Bonus "{bonus_type}" selected and applied for team {team.name}',
             'bonus': BonusSerializer(bonus).data
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_betting_table(request):
+    """Return all data needed for the betting table in a single API call"""
+    try:
+        identifier = request.query_params.get('identifier')
+        round_id = request.query_params.get('round_id')
+        
+        if not identifier or not round_id:
+            return Response({'error': 'Team identifier and round_id are required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        # 1. Get active round and verify
+        try:
+            round_obj = Round.objects.get(id=round_id)
+        except Round.DoesNotExist:
+            return Response({'error': 'Round not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 2. Get player team info
+        try:
+            player_team = Team.objects.get(identifier=identifier)
+        except Team.DoesNotExist:
+            return Response({'error': 'Player team not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # 3. Get all teams with odds for this round
+        teams = Team.objects.all().order_by('-distance')
+        bets_available = player_team.bets_available
+        
+        # 4. Get all bets made by this player
+        player_bets = Bet.objects.filter(team=player_team.id)
+        
+        # 5. Get odds for this round
+        odds_data = Odds.objects.filter(round=round_id)
+        
+        # 6. Build result table with all required data
+        result_table = []
+        
+        for team in teams:
+            # Get odds for this team
+            team_odds = odds_data.filter(team=team.id).first()
+            odd1 = team_odds.odd1 if team_odds else 1.0
+            odd2 = team_odds.odd2 if team_odds else 1.0
+            
+            # Sum bets for this team by the player
+            team_bets = player_bets.filter(bet_on_team=team.id)
+            bet1_sum = sum(bet.odds.odd1 for bet in team_bets if bet.odds) if team_bets else 0
+            bet2_sum = sum(bet.odds.odd2 for bet in team_bets if bet.odds) if team_bets else 0
+            
+            # Build team entry
+            result_table.append({
+                'id': team.id,
+                'name': team.name,
+                'description': team.description,
+                'distance': team.distance,
+                'odd1': odd1,
+                'odd2': odd2,
+                'bet1': bet1_sum,
+                'bet2': bet2_sum,
+                'is_player_team': team.id == player_team.id
+            })
+        
+        return Response({
+            'teams': result_table,
+            'bets_available': bets_available,
+            'round_stage': round_obj.stage
         })
         
     except Exception as e:

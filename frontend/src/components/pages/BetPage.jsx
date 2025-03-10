@@ -2,25 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
     TableHead, TableRow, Button, Dialog, DialogTitle, DialogContent, 
-    DialogContentText, DialogActions, CircularProgress, Alert, Tooltip
+    DialogContentText, DialogActions, CircularProgress, Alert
 } from '@mui/material';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { useSearchParams } from 'react-router-dom';
 import { 
-    getTeamByIdentifier, getAllTeams, getOddsForRound, 
-    getPlayerBets, placeBet, getBetsAvailable 
+    placeBet, getBettingTable
 } from '../../services/tournamentService';
 import { useTournament } from '../../context/TournamentContext';
 
 const BetPage = () => {
     const [searchParams] = useSearchParams();
-    const [teams, setTeams] = useState([]);
-    const [playerTeam, setPlayerTeam] = useState(null);
-    const [playerBets, setPlayerBets] = useState([]);
-    const [betsAvailable, setBetsAvailable] = useState(0);
+    const [tableData, setTableData] = useState({
+        teams: [],
+        bets_available: 0,
+        round_stage: ''
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [odds, setOdds] = useState([]);
     const pollingInterval = useRef(null);
     
     // Dialog state
@@ -33,7 +32,7 @@ const BetPage = () => {
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
 
-    // Fetch necessary data on component mount or when roundInfo changes
+    // Fetch betting table data on component mount or when roundInfo changes
     useEffect(() => {
         const fetchData = async () => {
             if (!playerId) {
@@ -51,29 +50,9 @@ const BetPage = () => {
                 setLoading(true);
                 setError('');
                 
-                // Get player team info
-                const playerTeamData = await getTeamByIdentifier(playerId);
-                setPlayerTeam(playerTeamData);
-                
-                // Get bets available
-                const betsData = await getBetsAvailable(playerId);
-                setBetsAvailable(betsData.bets_available);
-                
-                // Get all teams
-                const teamsData = await getAllTeams();
-                // Sort teams by distance (descending)
-                const sortedTeams = teamsData.sort((a, b) => b.distance - a.distance);
-                setTeams(sortedTeams);
-                
-                // Get odds for current round
-                const oddsData = await getOddsForRound(roundInfo.round_id);
-                setOdds(oddsData);
-                
-                // Get player's existing bets
-                if (playerTeamData) {
-                    const playerBetsData = await getPlayerBets(playerTeamData.id, roundInfo.round_id);
-                    setPlayerBets(playerBetsData);
-                }
+                // Get all betting table data in a single API call
+                const data = await getBettingTable(playerId, roundInfo.round_id);
+                setTableData(data);
             } catch (err) {
                 console.error("Error fetching betting data:", err);
                 setError('Failed to load betting data. Please try again.');
@@ -111,7 +90,7 @@ const BetPage = () => {
     };
 
     const handleBetConfirm = async () => {
-        if (!playerTeam || !selectedTeam || !roundInfo) {
+        if (!selectedTeam || !roundInfo) {
             setError('Missing required information to place bet');
             handleDialogClose();
             return;
@@ -119,15 +98,18 @@ const BetPage = () => {
         
         try {
             setLoading(true);
+            // Get the player team ID from the table data
+            const playerTeam = tableData.teams.find(team => team.is_player_team);
+            
+            if (!playerTeam) {
+                throw new Error('Could not identify player team');
+            }
+            
             await placeBet(playerTeam.id, selectedTeam.id, roundInfo.round_id);
             
-            // Update bets available
-            const betsData = await getBetsAvailable(playerId);
-            setBetsAvailable(betsData.bets_available);
-            
-            // Update player's bets
-            const playerBetsData = await getPlayerBets(playerTeam.id, roundInfo.round_id);
-            setPlayerBets(playerBetsData);
+            // Refresh the betting table data
+            const data = await getBettingTable(playerId, roundInfo.round_id);
+            setTableData(data);
             
             handleDialogClose();
         } catch (err) {
@@ -139,21 +121,7 @@ const BetPage = () => {
         }
     };
 
-    // Helper function to get odds for a team
-    const getOddsForTeam = (teamId) => {
-        const teamOdds = odds.find(o => o.team === teamId);
-        if (teamOdds) {
-            return { odd1: teamOdds.odd1, odd2: teamOdds.odd2 };
-        }
-        return { odd1: 1.0, odd2: 1.0 };
-    };
-
-    // Helper function to get total bets placed on a team
-    const getTotalBetsOnTeam = (teamId) => {
-        return playerBets.filter(bet => bet.bet_on_team === teamId).length;
-    };
-
-    if (loading && teams.length === 0) {
+    if (loading && tableData.teams.length === 0) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -172,59 +140,65 @@ const BetPage = () => {
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             
-            {playerTeam && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                    You have {betsAvailable} bets available
-                </Alert>
-            )}
+            <Alert severity="info" sx={{ mb: 2 }}>
+                You have {tableData.bets_available} bets available
+            </Alert>
             
             <Paper elevation={3}>
                 <TableContainer>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Team</TableCell>
-                                <TableCell>Distance</TableCell>
-                                <TableCell align="right">Odds</TableCell>
-                                <TableCell align="right">Your Bets</TableCell>
-                                {roundInfo?.stage === 'betting' && betsAvailable > 0 && (
-                                    <TableCell align="center">Action</TableCell>
+                                <TableCell rowSpan={2}>Team</TableCell>
+                                <TableCell rowSpan={2}>Distance</TableCell>
+                                <TableCell align="center" colSpan={2}>Odds</TableCell>
+                                <TableCell align="center" colSpan={2}>Your Bets</TableCell>
+                                {tableData.round_stage === 'betting' && tableData.bets_available > 0 && (
+                                    <TableCell align="center" rowSpan={2}>Action</TableCell>
                                 )}
+                            </TableRow>
+                            <TableRow>
+                                <TableCell align="center">1st Place</TableCell>
+                                <TableCell align="center">2nd Place</TableCell>
+                                <TableCell align="center">1st Place</TableCell>
+                                <TableCell align="center">2nd Place</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {teams.map((team) => {
-                                const teamOdds = getOddsForTeam(team.id);
-                                const betCount = getTotalBetsOnTeam(team.id);
-                                
-                                return (
-                                    <TableRow key={team.id} sx={{
-                                        bgcolor: team.id === playerTeam?.id ? 'rgba(63, 81, 181, 0.08)' : 'inherit'
-                                    }}>
-                                        <TableCell component="th" scope="row">
-                                            <Typography fontWeight={team.id === playerTeam?.id ? 'bold' : 'normal'}>
-                                                {team.name} {team.id === playerTeam?.id && '(You)'}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>{team.distance}/12</TableCell>
-                                        <TableCell align="right">{teamOdds.odd1}/{teamOdds.odd2}</TableCell>
-                                        <TableCell align="right">{betCount}</TableCell>
-                                        {roundInfo?.stage === 'betting' && betsAvailable > 0 && (
-                                            <TableCell align="center">
+                            {tableData.teams.map((team) => (
+                                <TableRow key={team.id} sx={{
+                                    bgcolor: team.is_player_team ? 'rgba(63, 81, 181, 0.08)' : 'inherit'
+                                }}>
+                                    <TableCell component="th" scope="row">
+                                        <Typography fontWeight={team.is_player_team ? 'bold' : 'normal'}>
+                                            {team.name} {team.is_player_team && '(You)'}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>{team.distance}/12</TableCell>
+                                    <TableCell align="center">{team.odd1}</TableCell>
+                                    <TableCell align="center">{team.odd2}</TableCell>
+                                    <TableCell align="center">{team.bet1}</TableCell>
+                                    <TableCell align="center">{team.bet2}</TableCell>
+                                    {tableData.round_stage === 'betting' && tableData.bets_available > 0 && (
+                                        <TableCell align="center">
+                                            {!team.is_player_team ? (
                                                 <Button 
                                                     variant="contained" 
                                                     size="small" 
                                                     color="primary"
                                                     onClick={() => handleBetClick(team)}
-                                                    disabled={team.id === playerTeam?.id} // Can't bet on yourself
                                                 >
                                                     Bet
                                                 </Button>
-                                            </TableCell>
-                                        )}
-                                    </TableRow>
-                                );
-                            })}
+                                            ) : (
+                                                <Typography variant="caption" color="textSecondary">
+                                                    Can't bet on yourself
+                                                </Typography>
+                                            )}
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>

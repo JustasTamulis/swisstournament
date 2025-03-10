@@ -1,35 +1,25 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    CountryViewSet,
-    LeagueViewSet,
-    CharacteristicViewSet,
-    FootballClubViewSet,
-    TeamViewSet,
-    RoundViewSet,
-    GameViewSet,
-    BetViewSet,
-    OddsViewSet,
-    BonusViewSet,
-    place_bet,
-    mark_game,
-    use_bonus
-)
+from . import views
 
 router = DefaultRouter()
-router.register("country", CountryViewSet, basename="country")
-router.register("league", LeagueViewSet, basename="league")
-router.register("characteristic", CharacteristicViewSet, basename="characteristic")
-router.register("footballclub", FootballClubViewSet, basename="footballclub")
-router.register("team", TeamViewSet, basename="team")
-router.register("round", RoundViewSet, basename="round")
-router.register("game", GameViewSet, basename="game")
-router.register("bet", BetViewSet, basename="bet")
-router.register("odds", OddsViewSet, basename='odds')
-router.register("bonus", BonusViewSet, basename='bonus')
+router.register(r'countries', views.CountryViewSet, 'country')
+router.register(r'leagues', views.LeagueViewSet, 'league')
+router.register(r'characteristics', views.CharacteristicViewSet, 'characteristic')
+router.register(r'football-clubs', views.FootballClubViewSet, 'footballclub')
+router.register(r'teams', views.TeamViewSet, 'team')
+router.register(r'rounds', views.RoundViewSet, 'round')
+router.register(r'games', views.GameViewSet, 'game')
+router.register(r'bets', views.BetViewSet, 'bet')
+router.register(r'odds', views.OddsViewSet, 'odds')
+router.register(r'bonuses', views.BonusViewSet, 'bonus')
 
-urlpatterns = router.urls + [
-    path('place-bet/', place_bet, name='place-bet'),
-    path('mark-game/', mark_game, name='mark-game'),
-    path('use-bonus/', use_bonus, name='use-bonus'),
+urlpatterns = [
+    path('', include(router.urls)),
+    path('place-bet/', views.place_bet, name='place-bet'),
+    path('mark-game/', views.mark_game, name='mark-game'),
+    path('use-bonus/', views.use_bonus, name='use-bonus'),
+    path('get-round-info/', views.get_round_info, name='get-round-info'),
+    path('get-bets-available/', views.get_bets_available, name='get-bets-available'),
+    path('get-next-opponent/', views.get_next_opponent, name='get-next-opponent'),
 ]

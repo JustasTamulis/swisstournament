@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.views.generic import TemplateView
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from django.db import models
 
 from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds, Bonus
 from .serializers import (
@@ -22,7 +23,7 @@ from .tournament import (
     move_to_next_stage,
     generate_new_odds,
     move_track,
-    check_winner,
+    check_tournament_winner,
     all_games_finished,
     process_winners,
     move_to_bonus_stage,
@@ -30,6 +31,15 @@ from .tournament import (
     all_bonuses_used,
     move_to_new_round,
 )
+
+# Helper function to check if a round is active
+def is_round_active(round_id):
+    """Check if a round is active"""
+    try:
+        round_obj = Round.objects.get(id=round_id, active=True)
+        return True
+    except Round.DoesNotExist:
+        return False
 
 
 class CountryViewSet(viewsets.ViewSet):
@@ -193,6 +203,69 @@ class React(TemplateView):
     template_name = 'index.html'
 
 
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_round_info(request):
+    """Return the current active round ID and stage"""
+    try:
+        active_round = Round.objects.get(active=True)
+        return Response({
+            'round_id': active_round.id,
+            'stage': active_round.stage,
+            'number': active_round.number
+        })
+    except Round.DoesNotExist:
+        return Response({'error': 'No active round found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_bets_available(request):
+    """Return the number of bets available for a team"""
+    try:
+        identifier = request.query_params.get('identifier')
+        if not identifier:
+            return Response({'error': 'Team identifier is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        team = get_object_or_404(Team, identifier=identifier)
+        return Response({
+            'bets_available': team.bets_available
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_next_opponent(request):
+    """Return the next opponent team for a given team and round"""
+    try:
+        identifier = request.query_params.get('identifier')
+        round_id = request.query_params.get('round_id')
+        
+        if not identifier or not round_id:
+            return Response({'error': 'Team identifier and round_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        team = get_object_or_404(Team, identifier=identifier)
+        round_obj = get_object_or_404(Round, id=round_id)
+        
+        # Find a game where the team is either team1 or team2
+        game = Game.objects.filter(
+            (models.Q(team1=team) | models.Q(team2=team)) & 
+            models.Q(round=round_obj)
+        ).first()
+        
+        if not game:
+            return Response({'error': 'No game found for this team and round'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Return the opponent
+        opponent = game.team2 if game.team1.id == team.id else game.team1
+        
+        return Response({
+            'opponent_name': opponent.name,
+            'opponent_id': opponent.id
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def place_bet(request):
@@ -202,9 +275,18 @@ def place_bet(request):
         bet_on_team_id = request.data.get('bet_on_team_id')
         round_id = request.data.get('round_id')
         
+        # Check if the round is active
+        if not is_round_active(round_id):
+            return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        
         team = get_object_or_404(Team, id=team_id)
         bet_on_team = get_object_or_404(Team, id=bet_on_team_id)
         round_obj = get_object_or_404(Round, id=round_id)
+        
+        # Check if the team has available bets
+        if team.bets_available <= 0:
+            return Response({'error': 'No bets available for this team'}, status=status.HTTP_400_BAD_REQUEST)
+        
         odds = get_object_or_404(Odds, team=bet_on_team, round=round_obj)
         
         # Create the bet
@@ -217,9 +299,8 @@ def place_bet(request):
         )
         
         # Reduce available bets for the team
-        if team.bets_available > 0:
-            team.bets_available -= 1
-            team.save()
+        team.bets_available -= 1
+        team.save()
         
         # Check if all bets are placed
         if all_bets_placed(round_id):
@@ -240,11 +321,29 @@ def place_bet(request):
 def mark_game(request):
     """API endpoint for recording game results"""
     try:
+        team_id = request.data.get('team_id')
         game_id = request.data.get('game_id')
-        winner_team_id = request.data.get('winner_team_id')
+        winner_id = request.data.get('winner_id')
+        round_id = request.data.get('round_id')
         
+        # Check if the round is active
+        if not is_round_active(round_id):
+            return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        team = get_object_or_404(Team, id=team_id)
         game = get_object_or_404(Game, id=game_id)
-        winner_team = get_object_or_404(Team, id=winner_team_id)
+        winner_team = get_object_or_404(Team, id=winner_id)
+        round_obj = get_object_or_404(Round, id=round_id)
+        
+        # Ensure the game belongs to the correct round
+        if game.round.id != round_obj.id:
+            return Response({'error': 'Game does not belong to the specified round'}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+        
+        # Ensure the team is participating in this game
+        if team.id != game.team1.id and team.id != game.team2.id:
+            return Response({'error': 'Team is not participating in this game'}, 
+                           status=status.HTTP_400_BAD_REQUEST)
         
         # Ensure the winner is one of the teams in the game
         if winner_team.id != game.team1.id and winner_team.id != game.team2.id:
@@ -257,13 +356,12 @@ def mark_game(request):
         game.save()
         
         # Check if all games in this round are finished
-        round_id = game.round.id
         if all_games_finished(round_id):
             # Process all winners
             process_winners(round_id)
             
             # Check if there's a tournament winner
-            winner = check_winner()
+            winner = check_tournament_winner()
             if winner:
                 # Move to finished stage
                 final_round = move_to_finished_stage(round_id, winner)
@@ -293,6 +391,10 @@ def use_bonus(request):
         team_id = request.data.get('team_id')
         bonus_type = request.data.get('bonus_type')
         round_id = request.data.get('round_id')
+        
+        # Check if the round is active
+        if not is_round_active(round_id):
+            return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         team = get_object_or_404(Team, id=team_id)
         round_obj = get_object_or_404(Round, id=round_id)

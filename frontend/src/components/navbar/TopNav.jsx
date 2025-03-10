@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { useLocation, useNavigate, useSearchParams } from 'react-router';
-import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import RedeemIcon from '@mui/icons-material/Redeem';
 import InfoIcon from '@mui/icons-material/Info';
+import { useTournament } from '../../context/TournamentContext';
 
 const useNavigateWithParams = () => {
     const navigate = useNavigate();
@@ -34,30 +35,7 @@ const TopNav = ({ content }) => {
     const location = useLocation();
     const navigateWithParams = useNavigateWithParams();
     const path = location.pathname;
-    const [roundInfo, setRoundInfo] = useState({ stage: '', number: 0 });
-    const [loading, setLoading] = useState(true);
-
-    // Fetch round info on component mount
-    useEffect(() => {
-        const fetchRoundInfo = async () => {
-            try {
-                const response = await axios.get('/api/get-round-info/');
-                setRoundInfo({
-                    stage: response.data.stage,
-                    number: response.data.number,
-                    round_id: response.data.round_id
-                });
-            } catch (error) {
-                console.error("Error fetching round info:", error);
-                // Set default values if no active round found
-                setRoundInfo({ stage: '', number: 0 });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRoundInfo();
-    }, []);
+    const { roundInfo, loading } = useTournament();
 
     // Define active path logic
     const isActive = (routePath) => {
@@ -73,9 +51,9 @@ const TopNav = ({ content }) => {
         if (loading) return {};
         
         const isCurrentStage = (
-            (buttonType === 'bet' && roundInfo.stage === 'betting') ||
-            (buttonType === 'joust' && roundInfo.stage === 'joust') ||
-            (buttonType === 'bonus' && roundInfo.stage === 'bonus')
+            (buttonType === 'bet' && roundInfo?.stage === 'betting') ||
+            (buttonType === 'joust' && roundInfo?.stage === 'joust') ||
+            (buttonType === 'bonus' && roundInfo?.stage === 'bonus')
         );
         
         return isCurrentStage ? { 
@@ -143,7 +121,7 @@ const TopNav = ({ content }) => {
                 </Toolbar>
             </AppBar>
             <Box sx={{ padding: 2 }}>
-                {!loading && roundInfo.number > 0 && (
+                {!loading && roundInfo?.number > 0 && (
                     <Box sx={{ 
                         mb: 2, 
                         p: 1, 
@@ -155,7 +133,11 @@ const TopNav = ({ content }) => {
                         Round {roundInfo.number} - {roundInfo.stage.toUpperCase()} stage
                     </Box>
                 )}
-                {content}
+                {loading && !roundInfo ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : content}
             </Box>
         </>
     );

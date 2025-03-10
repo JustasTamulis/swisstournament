@@ -17,25 +17,30 @@ import TrackPage from './components/pages/TrackPage'
 import BonusPage from './components/pages/BonusPage'
 import AboutPage from './components/pages/AboutPage'
 
+// Tournament Context
+import { TournamentProvider } from './context/TournamentContext';
+
 function App() {
   return (
     <>
       <Routes>
         {/* New tournament routes - added wildcard matcher (/*) to parent route */}
         <Route path="/*" element={
-          <TopNav
-            content={
-              <Routes>
-                {/* Default route redirects to track now */}
-                <Route path="" element={<TrackPage />} />
-                <Route path="track" element={<TrackPage />} />
-                <Route path="bet" element={<BetPage />} />
-                <Route path="joust" element={<JoustPage />} />
-                <Route path="bonus" element={<BonusPage />} />
-                <Route path="about" element={<AboutPage />} />
-              </Routes>
-            }
-          />
+          <TournamentProvider>
+            <TopNav
+              content={
+                <Routes>
+                  {/* Default route redirects to track now */}
+                  <Route path="" element={<TrackPage />} />
+                  <Route path="track" element={<TrackPage />} />
+                  <Route path="bet" element={<BetPage />} />
+                  <Route path="joust" element={<JoustPage />} />
+                  <Route path="bonus" element={<BonusPage />} />
+                  <Route path="about" element={<AboutPage />} />
+                </Routes>
+              }
+            />
+          </TournamentProvider>
         } />
 
         {/* Old routes moved to /old/* */}

@@ -64,11 +64,11 @@ back: ## Run Django development server
 ########################################################################################
 ## Database related
 
-makemigrations: ## Create new database migrations
-	python backend/manage.py makemigrations
+mmig: ## Create new database migrations
+	cd backend && python manage.py makemigrations
 
-migrate: ## Apply database migrations
-	python backend/manage.py migrate
+mig: ## Apply database migrations
+	cd backend && python manage.py migrate
 
 admin: ## Create a superuser
 	python backend/manage.py createsuperuser

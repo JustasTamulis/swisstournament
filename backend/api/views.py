@@ -20,8 +20,7 @@ from .serializers import (
 )
 from .tournament import (
     all_bets_placed,
-    move_to_next_stage,
-    generate_new_odds,
+    move_to_joust_stage,
     move_track,
     check_tournament_winner,
     all_games_finished,
@@ -301,7 +300,7 @@ def place_bet(request):
             bet_on_team=bet_on_team,
             odds=odds,
             round=round_obj,
-            bet_finish=False
+            bet_finish=team.bets_available == 1
         )
         
         # Reduce available bets for the team
@@ -311,7 +310,7 @@ def place_bet(request):
         # Check if all bets are placed
         if all_bets_placed(round_id):
             # Move to next stage
-            new_round = move_to_next_stage(round_id)
+            new_round = move_to_joust_stage(round_id)
             return Response({
                 'message': 'Bet placed successfully. All bets are in, moving to joust stage.',
                 'new_round': RoundSerializer(new_round).data
@@ -364,7 +363,7 @@ def mark_game(request):
         # Check if all games in this round are finished
         if all_games_finished(round_id):
             # Process all winners
-            process_winners(round_id)
+            winners = process_winners(round_id)
             
             # Check if there's a tournament winner
             winner = check_tournament_winner()
@@ -378,7 +377,7 @@ def mark_game(request):
                 })
             else:
                 # Move to bonus stage
-                bonus_round = move_to_bonus_stage(round_id)
+                bonus_round = move_to_bonus_stage(round_id, winners)
                 return Response({
                     'message': 'All games finished. Moving to bonus stage.',
                     'round': RoundSerializer(bonus_round).data
@@ -396,6 +395,7 @@ def use_bonus(request):
     try:
         team_id = request.data.get('team_id')
         bonus_type = request.data.get('bonus_type')
+        bonus_target_team_id = request.data.get('bonus_target')
         round_id = request.data.get('round_id')
         
         # Check if the round is active
@@ -412,13 +412,41 @@ def use_bonus(request):
             return Response({'error': 'No unused bonus found for this team in current round'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
+        # Check if bonus target exists, if required
+        if "distance" in bonus_type:
+            if not bonus_target_team_id:
+                return Response({'error': 'Bonus target is required for this bonus type'}, 
+                               status=status.HTTP_400_BAD_REQUEST)
+            target_team = get_object_or_404(Team, id=bonus_target_team_id)
+
+        # Apply bonus logic
+        match bonus_type:
+            case "extra_bet":
+                team.bets_available += 1
+                team.save()
+            case "extra_distance":
+                # Do not add distance if the target team is 1 away from finishing
+                if target_team.distance >= 11:
+                    return Response({'error': 'Players must finish on their own'}, 
+                                   status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    target_team.distance += 1
+                    target_team.save()
+            case "minus_distance":
+                # Do not reduce distance if the target team is already at 0
+                if target_team.distance <= 0:
+                    return Response({'error': 'Cannot reduce distance below 0'}, 
+                                   status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    target_team.distance -= 1
+                    target_team.save()
+            case _:
+                return Response({'error': 'Invalid bonus type'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Mark bonus as used and update description
         bonus.finished = True
         bonus.description = f"Used bonus: {bonus_type}"
         bonus.save()
-        
-        # Apply bonus logic (placeholder for future implementation)
-        # For example: if bonus_type == "extra_distance": move_track(team.id, 2)
         
         # Check if all bonuses are used in this round
         if all_bonuses_used(round_id):

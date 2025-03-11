@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-    Box, Typography, Paper, Button, Grid, CircularProgress, Alert,
+    Box, Typography, Paper, Button, CircularProgress, Alert,
     Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import RedeemIcon from '@mui/icons-material/Redeem';
 import { useSearchParams } from 'react-router-dom';
 import { 

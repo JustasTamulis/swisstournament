@@ -22,12 +22,21 @@ def all_bets_placed(round_id):
     """Check if all teams have placed bets for this round"""
     round_obj = Round.objects.get(id=round_id)
     teams = Team.objects.all()
+
+    # For each team, check if they have atleast one bet with bet_finished=True
     for team in teams:
-        if not Bet.objects.filter(team=team, round=round_obj).exists():
+        bets = Bet.objects.filter(team=team, round=round_obj)
+        bet_finished = False
+        for bet in bets:
+            if bet.finished:
+                bet_finished = True
+                break
+        if not bet_finished:
             return False
     return True
 
-def move_to_next_stage(round_id):
+
+def move_to_joust_stage(round_id):
     """Move from betting stage to joust stage"""
     current_round = Round.objects.get(id=round_id)
     
@@ -98,7 +107,7 @@ def process_winners(round_id):
     
     return winners
 
-def move_to_bonus_stage(round_id):
+def move_to_bonus_stage(round_id, winners):
     """Move from joust stage to bonus stage"""
     current_round = Round.objects.get(id=round_id)
     
@@ -113,15 +122,33 @@ def move_to_bonus_stage(round_id):
     current_round.active = False
     current_round.save()
     
-    # Create empty bonus entries for all teams
+    # Create bonuses for all teams
+    # Set bonus as finished for not winning teams
+    # Winning teams will get bonus every 3 distance
     teams = Team.objects.all()
     for team in teams:
-        Bonus.objects.create(
-            team=team,
-            round=new_round,
-            finished=False,
-            description="Not used yet"
-        )
+        # For debuging, always give bonus to the first team
+        if team == teams[0]:
+            Bonus.objects.create(
+                team=team,
+                round=new_round,
+                finished=False,
+                description="Bonus for winning the round"
+            )
+        elif team in winners and team.distance % 3 == 0:
+            Bonus.objects.create(
+                team=team,
+                round=new_round,
+                finished=False,
+                description="Bonus for winning the round"
+            )
+        else:
+            Bonus.objects.create(
+                team=team,
+                round=new_round,
+                finished=True,
+                description="No bonus this round"
+            )
     
     return new_round
 

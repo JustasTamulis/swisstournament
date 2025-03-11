@@ -139,6 +139,12 @@ def all_bonuses_used(round_id):
 def move_to_new_round(round_id):
     """Start a new round with betting stage after bonus stage"""
     current_round = Round.objects.get(id=round_id)
+    teams = list(Team.objects.all())
+
+    # Increase the number of bets_available for all teams
+    for team in teams:
+        team.bets_available += 1
+        team.save()
     
     # Create new round with betting stage
     new_round = Round.objects.create(

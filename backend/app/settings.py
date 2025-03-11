@@ -50,6 +50,7 @@ IS_HEROKU_APP = "DYNO" in os.environ and "CI" not in os.environ
 # SECURITY WARNING: Keep the secret key used in production secret!
 # For development, use a fixed secret key to maintain session consistency
 # In production, still use the environment variable
+
 if os.environ.get("ENVIRONMENT") == "development" or not IS_HEROKU_APP:
     # Fixed secret key for development only
     SECRET_KEY = "django-insecure-dev-key-donotuseinproduction12345678901234567890"
@@ -58,7 +59,8 @@ else:
         "DJANGO_SECRET_KEY",
         default=secrets.token_urlsafe(nbytes=64),
     )
-
+# SECRET_KEY = secrets.token_urlsafe(nbytes=64)
+SECRET_KEY = "django-insecure-dev-key-donotuseinproduction12345678901234567890"
 
 if IS_HEROKU_APP:
     # On Heroku, it's safe to use a wildcard for `ALLOWED_HOSTS`, since the Heroku router performs
@@ -123,13 +125,12 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://127.0.0.1:9000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:8000",
     "http://localhost:5173",
-    "https://safe-bastion-25931-8818d1c4d653.herokuapp.com",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:5173",
 ]
+
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 ROOT_URLCONF = "backend.app.urls"
 
@@ -266,6 +267,17 @@ LOGGING = {
             "level": "ERROR",
         },
         "django.contrib.sessions": {
+            "handlers": ["verbose_console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        # Add custom logger for API views
+        "backend.api.views": {
+            "handlers": ["verbose_console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "backend.api.tournament": {
             "handlers": ["verbose_console"],
             "level": "DEBUG",
             "propagate": False,

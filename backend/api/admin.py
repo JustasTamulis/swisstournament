@@ -3,7 +3,7 @@ from .models import Country, League, Characteristic, FootballClub, Team, Round, 
 
 # Custom admin for Team
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('identifier', 'name', 'bets_available', 'distance', 'created', 'modified')
+    list_display = ('id', 'identifier', 'name', 'bets_available', 'distance', 'created', 'modified')
     list_filter = ('bets_available', 'created')
     search_fields = ('identifier', 'name', 'description')
     ordering = ('name',)
@@ -18,7 +18,7 @@ class TeamAdmin(admin.ModelAdmin):
 
 # Custom admin for Round
 class RoundAdmin(admin.ModelAdmin):
-    list_display = ('number', 'stage', 'active', 'created', 'modified')
+    list_display = ('id', 'number', 'stage', 'active', 'created', 'modified')
     list_filter = ('active', 'stage')
     search_fields = ('number', 'stage')
     ordering = ('number',)
@@ -33,7 +33,7 @@ class RoundAdmin(admin.ModelAdmin):
 
 # Custom admin for Game
 class GameAdmin(admin.ModelAdmin):
-    list_display = ('team1', 'team2', 'round', 'win', 'finished', 'created')
+    list_display = ('id', 'team1', 'team2', 'round', 'win', 'finished', 'created')
     list_filter = ('finished', 'round', 'win')
     search_fields = ('team1__name', 'team2__name')
     ordering = ('-round__number', 'team1__name')
@@ -48,7 +48,7 @@ class GameAdmin(admin.ModelAdmin):
 
 # Custom admin for Bet
 class BetAdmin(admin.ModelAdmin):
-    list_display = ('team', 'bet_on_team', 'round', 'bet_finish', 'created')
+    list_display = ('id', 'team', 'bet_on_team', 'round', 'bet_finish', 'created')
     list_filter = ('bet_finish', 'round')
     search_fields = ('team__name', 'bet_on_team__name')
     ordering = ('-created',)
@@ -63,7 +63,7 @@ class BetAdmin(admin.ModelAdmin):
 
 # Custom admin for Odds
 class OddsAdmin(admin.ModelAdmin):
-    list_display = ('team', 'round', 'odd1', 'odd2', 'created', 'modified')
+    list_display = ('id', 'team', 'round', 'odd1', 'odd2', 'created', 'modified')
     list_filter = ('round',)
     search_fields = ('team__name',)
     ordering = ('round', 'team__name')
@@ -78,7 +78,7 @@ class OddsAdmin(admin.ModelAdmin):
 
 # Custom admin for Bonus
 class BonusAdmin(admin.ModelAdmin):
-    list_display = ('team', 'round', 'description', 'finished', 'created')
+    list_display = ('id', 'team', 'round', 'description', 'finished', 'created')
     list_filter = ('finished', 'round')
     search_fields = ('team__name', 'description')
     ordering = ('-created',)

@@ -60,13 +60,9 @@ export const markGame = async (teamId, gameId, winnerId, roundId) => {
     }
 };
 
-export const useBonus = async (teamId, bonusType, roundId) => {
+export const useBonus = async (bonusData) => {
     try {
-        const response = await tournamentApi.post('use-bonus/', {
-            team_id: teamId,
-            bonus_type: bonusType,
-            round_id: roundId
-        });
+        const response = await tournamentApi.post('use-bonus/', bonusData);
         return response.data;
     } catch (error) {
         console.error("Error using bonus:", error);
@@ -106,10 +102,11 @@ export const getGamesForRound = async (roundId) => {
     }
 };
 
-export const getBonusForTeam = async (teamId, roundId) => {
+export const getBonusForTeam = async (identifier, roundId) => {
     try {
-        const response = await tournamentApi.get(`bonuses/?team=${teamId}&round=${roundId}`);
-        return response.data.length > 0 ? response.data[0] : null;
+        const response = await tournamentApi.get(`get-bonus-for-team/?identifier=${identifier}&round_id=${roundId}`);
+        console.log("Bonus response:", response.data);
+        return response.data;
     } catch (error) {
         console.error("Error fetching bonus for team:", error);
         throw error;

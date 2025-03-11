@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
     Box, Typography, Paper, Button, CircularProgress, Alert,
-    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
+    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+    FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import RedeemIcon from '@mui/icons-material/Redeem';
 import { useSearchParams } from 'react-router-dom';
 import { 
-    getTeamByIdentifier, getBonusForTeam, useBonus 
+    getTeamByIdentifier, getBonusForTeam, useBonus, getBettingTable
 } from '../../services/tournamentService';
 import { useTournament } from '../../context/TournamentContext';
 
@@ -18,10 +19,13 @@ const BonusPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const pollingInterval = useRef(null);
+    const [teams, setTeams] = useState([]);
     
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedBonus, setSelectedBonus] = useState(null);
+    const [targetTeam, setTargetTeam] = useState('');
+    const [showTargetSelect, setShowTargetSelect] = useState(false);
     
     // Get tournament context
     const { roundInfo, roundChanged } = useTournament();
@@ -32,6 +36,9 @@ const BonusPage = () => {
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
+
+    console.log("BonusPage playerId:", playerId);
+    console.log("playerTeam", playerTeam);
 
     // Fetch necessary data only on mount or round/stage change
     useEffect(() => {
@@ -54,8 +61,14 @@ const BonusPage = () => {
                 
                 // Check if player has an available bonus
                 if (playerTeamData) {
-                    const bonusData = await getBonusForTeam(playerTeamData.id, roundId);
+                    const bonusData = await getBonusForTeam(playerId, roundId);
                     setBonus(bonusData);
+                    
+                    // Fetch available teams for targeting
+                    const tableData = await getBettingTable(playerId, roundId);
+                    if (tableData && tableData.teams) {
+                        setTeams(tableData.teams.filter(team => team.id !== playerTeamData.id));
+                    }
                 }
             } catch (err) {
                 console.error("Error fetching bonus data:", err);
@@ -71,12 +84,22 @@ const BonusPage = () => {
 
     const handleBonusSelect = (bonusType) => {
         setSelectedBonus(bonusType);
+        
+        // Determine if we need to show target selection
+        if (bonusType === 'plus_distance' || bonusType === 'minus_distance') {
+            setShowTargetSelect(true);
+        } else {
+            setShowTargetSelect(false);
+        }
+        
         setDialogOpen(true);
     };
 
     const handleDialogClose = () => {
         setDialogOpen(false);
         setSelectedBonus(null);
+        setTargetTeam('');
+        setShowTargetSelect(false);
     };
 
     const handleBonusConfirm = async () => {
@@ -86,13 +109,32 @@ const BonusPage = () => {
             return;
         }
         
+        // Check if we need a target and if it's selected
+        if ((selectedBonus === 'plus_distance' || selectedBonus === 'minus_distance') && !targetTeam) {
+            setError('You must select a target team for this bonus type');
+            return;
+        }
+        
         try {
             setLoading(true);
-            await useBonus(playerTeam.id, selectedBonus, roundInfo.round_id);
+            
+            // Prepare bonus data
+            const bonusData = {
+                team_id: playerTeam.id,
+                bonus_type: selectedBonus,
+                round_id: roundInfo.round_id
+            };
+            
+            // Add target team if needed
+            if (selectedBonus === 'plus_distance' || selectedBonus === 'minus_distance') {
+                bonusData.bonus_target = targetTeam;
+            }
+            
+            await useBonus(bonusData);
             
             // Update bonus status
-            const bonusData = await getBonusForTeam(playerTeam.id, roundInfo.round_id);
-            setBonus(bonusData);
+            const bonusData2 = await getBonusForTeam(playerId, roundInfo.round_id);
+            setBonus(bonusData2);
             
             handleDialogClose();
         } catch (err) {
@@ -139,16 +181,6 @@ const BonusPage = () => {
                             <Button 
                                 variant="outlined" 
                                 fullWidth 
-                                onClick={() => handleBonusSelect('move_ahead')}
-                                sx={{ height: '100px' }}
-                            >
-                                Move 2 Spaces Ahead
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <Button 
-                                variant="outlined" 
-                                fullWidth 
                                 onClick={() => handleBonusSelect('extra_bet')}
                                 sx={{ height: '100px' }}
                             >
@@ -159,20 +191,20 @@ const BonusPage = () => {
                             <Button 
                                 variant="outlined" 
                                 fullWidth 
-                                onClick={() => handleBonusSelect('opponent_back')}
+                                onClick={() => handleBonusSelect('plus_distance')}
                                 sx={{ height: '100px' }}
                             >
-                                Move Opponent Back
+                                Increase Team Distance (+1)
                             </Button>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <Button 
                                 variant="outlined" 
                                 fullWidth 
-                                onClick={() => handleBonusSelect('double_win')}
+                                onClick={() => handleBonusSelect('minus_distance')}
                                 sx={{ height: '100px' }}
                             >
-                                Double Next Win Points
+                                Decrease Team Distance (-1)
                             </Button>
                         </Grid>
                     </Grid>
@@ -216,12 +248,36 @@ const BonusPage = () => {
                     <DialogContentText>
                         Are you sure you want to use the {getReadableBonusName(selectedBonus)} bonus? This action cannot be undone.
                     </DialogContentText>
+                    
+                    {showTargetSelect && (
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <InputLabel id="target-team-label">Select Target Team</InputLabel>
+                            <Select
+                                labelId="target-team-label"
+                                id="target-team-select"
+                                value={targetTeam}
+                                label="Target Team"
+                                onChange={(e) => setTargetTeam(e.target.value)}
+                            >
+                                {teams.map((team) => (
+                                    <MenuItem key={team.id} value={team.id}>
+                                        {team.name} (Distance: {team.distance})
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose} color="primary">
                         Cancel
                     </Button>
-                    <Button onClick={handleBonusConfirm} color="primary" autoFocus>
+                    <Button 
+                        onClick={handleBonusConfirm} 
+                        color="primary" 
+                        autoFocus
+                        disabled={showTargetSelect && !targetTeam}
+                    >
                         Confirm
                     </Button>
                 </DialogActions>
@@ -233,14 +289,12 @@ const BonusPage = () => {
 // Helper function to convert bonus types to readable names
 function getReadableBonusName(bonusType) {
     switch (bonusType) {
-        case 'move_ahead':
-            return 'Move 2 Spaces Ahead';
         case 'extra_bet':
             return 'Get Extra Bet';
-        case 'opponent_back':
-            return 'Move Opponent Back';
-        case 'double_win':
-            return 'Double Next Win Points';
+        case 'plus_distance':
+            return 'Increase Team Distance (+1)';
+        case 'minus_distance':
+            return 'Decrease Team Distance (-1)';
         default:
             return bonusType;
     }

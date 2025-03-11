@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from django.db import models
+import logging
 
 from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds, Bonus
 from .serializers import (
@@ -30,6 +31,9 @@ from .tournament import (
     all_bonuses_used,
     move_to_new_round,
 )
+
+# Get a logger for this file
+logger = logging.getLogger(__name__)
 
 # Helper function to check if a round is active
 def is_round_active(round_id):
@@ -266,49 +270,121 @@ def get_next_opponent(request):
         
         return Response({
             'opponent_name': opponent.name,
-            'opponent_id': opponent.id
+            'opponent_id': opponent.id,
+            'opponent_description': opponent.description,
+            'game_finished': game.finished,
+            'game_id': game.id
         })
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_bonus_for_team(request):
+    """Return bonus information for a specific team in a specific round"""
+    try:
+        identifier = request.query_params.get('identifier')
+        round_id = request.query_params.get('round_id')
+        
+        if not identifier or not round_id:
+            return Response({'error': 'Team identifier and round_id are required'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the team by identifier
+        team = get_object_or_404(Team, identifier=identifier)
+        
+        # Get the round
+        round_obj = get_object_or_404(Round, id=round_id)
+        
+        # Find the bonus for this team and round
+        bonus = Bonus.objects.filter(team=team, round=round_obj).first()
+        
+        if not bonus:
+            return Response(None, status=status.HTTP_200_OK)
+        
+        # Return the bonus data
+        return Response(BonusSerializer(bonus).data)
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt  # Add this decorator to bypass CSRF protection for this endpoint
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def place_bet(request):
     """API endpoint for placing bets"""
+    logger.debug("place_bet function called with data: %s", request.data)
     try:
         team_id = request.data.get('team_id')
         bet_on_team_id = request.data.get('bet_on_team_id')
         round_id = request.data.get('round_id')
         
+        logger.debug("Bet parameters - team_id: %s, bet_on_team_id: %s, round_id: %s", 
+                    team_id, bet_on_team_id, round_id)
+        
         # Check if the round is active
         if not is_round_active(round_id):
+            logger.warning("Attempted to place bet for inactive round: %s", round_id)
             return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         team = get_object_or_404(Team, id=team_id)
+        logger.debug("Found team: %s (ID: %s)", team.name, team.id)
+        
         bet_on_team = get_object_or_404(Team, id=bet_on_team_id)
+        logger.debug("Found bet_on_team: %s (ID: %s)", bet_on_team.name, bet_on_team.id)
+        
         round_obj = get_object_or_404(Round, id=round_id)
+        logger.debug("Found round: %s, stage: %s", round_obj.number, round_obj.stage)
         
         # Check if the team has available bets
         if team.bets_available <= 0:
+            logger.warning("Team %s has no available bets", team.name)
             return Response({'error': 'No bets available for this team'}, status=status.HTTP_400_BAD_REQUEST)
         
-        odds = get_object_or_404(Odds, team=bet_on_team, round=round_obj)
+        logger.debug("Team %s has %d bets available", team.name, team.bets_available)
+        
+        try:
+            odds = get_object_or_404(Odds, team=bet_on_team, round=round_obj)
+            logger.debug("Found odds for team %s: odd1=%s, odd2=%s", 
+                        bet_on_team.name, odds.odd1, odds.odd2)
+        except Exception as e:
+            logger.error("Failed to find odds for team %s and round %s: %s", 
+                        bet_on_team.name, round_obj.number, str(e))
+            return Response({'error': f'No odds found for this team and round: {str(e)}'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
         
         # Create the bet
-        bet = Bet.objects.create(
-            team=team,
-            bet_on_team=bet_on_team,
-            odds=odds,
-            round=round_obj,
-            bet_finish=team.bets_available == 1
-        )
+        try:
+            bet = Bet.objects.create(
+                team=team,
+                bet_on_team=bet_on_team,
+                odds=odds,
+                round=round_obj,
+                bet_finish=(team.bets_available == 1)
+            )
+            logger.debug("Created bet: %s", bet)
+        except Exception as e:
+            logger.error("Failed to create bet: %s", str(e))
+            return Response({'error': f'Failed to create bet: {str(e)}'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
         
         # Reduce available bets for the team
-        team.bets_available -= 1
-        team.save()
+        try:
+            team.bets_available -= 1
+            team.save()
+            logger.debug("Decreased bets_available for team %s to %d", 
+                        team.name, team.bets_available)
+        except Exception as e:
+            logger.error("Failed to update team bets_available: %s", str(e))
+            return Response({'error': f'Failed to update team: {str(e)}'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
         
         # Check if all bets are placed
         if all_bets_placed(round_id):
+            logger.info("All bets are placed for round %s, moving to joust stage", round_obj.number)
             # Move to next stage
             new_round = move_to_joust_stage(round_id)
             return Response({
@@ -316,9 +392,12 @@ def place_bet(request):
                 'new_round': RoundSerializer(new_round).data
             })
         
+        logger.info("Bet placed successfully for team %s on team %s", 
+                   team.name, bet_on_team.name)
         return Response({'message': 'Bet placed successfully'})
     
     except Exception as e:
+        logger.exception("Error in place_bet function: %s", str(e))
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -424,7 +503,7 @@ def use_bonus(request):
             case "extra_bet":
                 team.bets_available += 1
                 team.save()
-            case "extra_distance":
+            case "plus_distance":
                 # Do not add distance if the target team is 1 away from finishing
                 if target_team.distance >= 11:
                     return Response({'error': 'Players must finish on their own'}, 

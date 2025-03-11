@@ -15,11 +15,12 @@ const JoustPage = () => {
     const [searchParams] = useSearchParams();
     const [opponent, setOpponent] = useState(null);
     const [opponentId, setOpponentId] = useState(null);
+    const [opponentDescription, setOpponentDescription] = useState('');
     const [gameId, setGameId] = useState(null);
+    const [gameFinished, setGameFinished] = useState(false);
     const [playerTeam, setPlayerTeam] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const pollingInterval = useRef(null);
     
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -61,17 +62,9 @@ const JoustPage = () => {
                             const opponentData = await getNextOpponent(playerId, roundId);
                             setOpponent(opponentData.opponent_name);
                             setOpponentId(opponentData.opponent_id);
-                            
-                            // Find the game
-                            const games = await getGamesForRound(roundId);
-                            const relevantGame = games.find(game => 
-                                (game.team1 === playerTeamData.id && game.team2 === opponentData.opponent_id) || 
-                                (game.team2 === playerTeamData.id && game.team1 === opponentData.opponent_id)
-                            );
-                            
-                            if (relevantGame) {
-                                setGameId(relevantGame.id);
-                            }
+                            setOpponentDescription(opponentData.opponent_description || '');
+                            setGameFinished(opponentData.game_finished || false);
+                            setGameId(opponentData.game_id); // Use the game ID from the API response
                         } catch (opponentError) {
                             // If there's an error getting opponent, it might mean all games are finished
                             console.log("No opponent found, might be finished:", opponentError);
@@ -81,6 +74,8 @@ const JoustPage = () => {
                     // Not in joust stage - clear opponent data
                     setOpponent(null);
                     setOpponentId(null);
+                    setOpponentDescription('');
+                    setGameFinished(false);
                     setGameId(null);
                     
                     // Get player team info for display purposes
@@ -177,24 +172,38 @@ const JoustPage = () => {
                         {opponent}
                     </Typography>
                     
-                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
-                        <Button 
-                            variant="contained" 
-                            color="success"
-                            onClick={handleWinClick}
-                            disabled={loading}
-                        >
-                            I Won
-                        </Button>
-                        <Button 
-                            variant="contained" 
-                            color="error"
-                            onClick={handleLoseClick}
-                            disabled={loading}
-                        >
-                            I Lost
-                        </Button>
-                    </Box>
+                    {opponentDescription && (
+                        <Typography variant="body1" sx={{ mt: 2, mb: 2, fontStyle: 'italic' }}>
+                            "{opponentDescription}"
+                        </Typography>
+                    )}
+                    
+                    {gameFinished ? (
+                        <Box sx={{ mt: 3 }}>
+                            <Alert severity="info">
+                                This game has already been completed. Please wait for the next round.
+                            </Alert>
+                        </Box>
+                    ) : (
+                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                            <Button 
+                                variant="contained" 
+                                color="success"
+                                onClick={handleWinClick}
+                                disabled={loading}
+                            >
+                                I Won
+                            </Button>
+                            <Button 
+                                variant="contained" 
+                                color="error"
+                                onClick={handleLoseClick}
+                                disabled={loading}
+                            >
+                                I Lost
+                            </Button>
+                        </Box>
+                    )}
                 </Paper>
             ) : (
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>

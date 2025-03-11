@@ -14,13 +14,15 @@ const TrackPage = () => {
     const [animating, setAnimating] = useState(false);
     const prevTeamsRef = useRef([]);
     const animationTimeout = useRef(null);
-    const pollingInterval = useRef(null);
     
     // Get tournament context
-    const { currentPage, roundInfo } = useTournament();
+    const { roundInfo, roundChanged } = useTournament();
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
+
+    // Track if we've done the initial load
+    const initialLoadDone = useRef(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -70,27 +72,21 @@ const TrackPage = () => {
                 setError('Failed to load track data. Please try again.');
             } finally {
                 setLoading(false);
+                initialLoadDone.current = true;
             }
         };
         
-        // Initial fetch
-        fetchData();
-        
-        // Only set up polling if this is the current page
-        if (currentPage === 'track' || currentPage === '') {
-            pollingInterval.current = setInterval(fetchData, 10000);
+        // Only fetch data on the initial load or when round changes
+        if (!initialLoadDone.current || roundChanged) {
+            fetchData();
         }
         
-        // Clean up on unmount or when currentPage changes
         return () => {
-            if (pollingInterval.current) {
-                clearInterval(pollingInterval.current);
-            }
             if (animationTimeout.current) {
                 clearTimeout(animationTimeout.current);
             }
         };
-    }, [playerId, currentPage]);
+    }, [playerId, roundChanged]);
 
     if (loading && teams.length === 0) {
         return (

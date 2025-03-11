@@ -21,16 +21,6 @@ export const getRoundInfo = async () => {
     }
 };
 
-export const getBetsAvailable = async (identifier) => {
-    try {
-        const response = await tournamentApi.get(`get-bets-available/?identifier=${identifier}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching bets available:", error);
-        throw error;
-    }
-};
-
 export const getNextOpponent = async (identifier, roundId) => {
     try {
         const response = await tournamentApi.get(`get-next-opponent/?identifier=${identifier}&round_id=${roundId}`);
@@ -102,26 +92,6 @@ export const getTeamByIdentifier = async (identifier) => {
         return response.data.length > 0 ? response.data[0] : null;
     } catch (error) {
         console.error("Error fetching team by identifier:", error);
-        throw error;
-    }
-};
-
-export const getOddsForRound = async (roundId) => {
-    try {
-        const response = await tournamentApi.get(`odds/?round=${roundId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching odds for round:", error);
-        throw error;
-    }
-};
-
-export const getPlayerBets = async (teamId, roundId) => {
-    try {
-        const response = await tournamentApi.get(`bets/?team=${teamId}&round=${roundId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching player bets:", error);
         throw error;
     }
 };

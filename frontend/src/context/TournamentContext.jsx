@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { getRoundInfo } from '../services/tournamentService';
 import { useLocation } from 'react-router-dom';
 
@@ -8,6 +8,9 @@ export const TournamentProvider = ({ children }) => {
     const [roundInfo, setRoundInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [roundChanged, setRoundChanged] = useState(false);
+    const previousRoundInfoRef = useRef(null);
+    
     const location = useLocation();
     
     // Extract current page from path
@@ -17,6 +20,21 @@ export const TournamentProvider = ({ children }) => {
     const fetchRoundInfo = useCallback(async () => {
         try {
             const data = await getRoundInfo();
+            
+            // Check if round or stage has changed - only trigger changes when needed
+            if (previousRoundInfoRef.current && (
+                previousRoundInfoRef.current.number !== data.number || 
+                previousRoundInfoRef.current.stage !== data.stage
+            )) {
+                console.log('Round or stage changed - triggering updates');
+                setRoundChanged(true);
+                // Reset the flag after a delay to allow components to react
+                setTimeout(() => setRoundChanged(false), 200);
+            }
+            
+            // Update ref for future comparisons
+            previousRoundInfoRef.current = {...data};
+            
             setRoundInfo(data);
             setError(null);
         } catch (err) {
@@ -45,6 +63,7 @@ export const TournamentProvider = ({ children }) => {
         loading,
         error,
         currentPage,
+        roundChanged,
         refreshRoundInfo: fetchRoundInfo
     };
     

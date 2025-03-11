@@ -26,21 +26,22 @@ const JoustPage = () => {
     const [selectedWinner, setSelectedWinner] = useState(null);
     
     // Get tournament context
-    const { roundInfo, currentPage } = useTournament();
+    const { roundInfo, roundChanged } = useTournament();
+    
+    // Extract only the properties we need to depend on
+    const roundId = roundInfo?.round_id;
+    const roundStage = roundInfo?.stage;
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!playerId) {
-                setError('Player ID is required. Please add player_id to the URL.');
+            if (!playerId || !roundId) {
+                if (!playerId) {
+                    setError('Player ID is required. Please add player_id to the URL.');
+                }
                 setLoading(false);
-                return;
-            }
-            
-            if (!roundInfo) {
-                // Wait for roundInfo to be loaded from context
                 return;
             }
             
@@ -49,7 +50,7 @@ const JoustPage = () => {
                 setError('');
                 
                 // Only continue if we're in joust stage
-                if (roundInfo.stage === 'joust') {
+                if (roundStage === 'joust') {
                     // Get player team info
                     const playerTeamData = await getTeamByIdentifier(playerId);
                     setPlayerTeam(playerTeamData);
@@ -57,12 +58,12 @@ const JoustPage = () => {
                     if (playerTeamData) {
                         // Get next opponent
                         try {
-                            const opponentData = await getNextOpponent(playerId, roundInfo.round_id);
+                            const opponentData = await getNextOpponent(playerId, roundId);
                             setOpponent(opponentData.opponent_name);
                             setOpponentId(opponentData.opponent_id);
                             
                             // Find the game
-                            const games = await getGamesForRound(roundInfo.round_id);
+                            const games = await getGamesForRound(roundId);
                             const relevantGame = games.find(game => 
                                 (game.team1 === playerTeamData.id && game.team2 === opponentData.opponent_id) || 
                                 (game.team2 === playerTeamData.id && game.team1 === opponentData.opponent_id)
@@ -94,23 +95,9 @@ const JoustPage = () => {
             }
         };
         
-        // Initial fetch when roundInfo is available
-        if (roundInfo) {
-            fetchData();
-        }
+        fetchData();
         
-        // Only set up polling if this is the current page
-        if (currentPage === 'joust' && roundInfo) {
-            pollingInterval.current = setInterval(fetchData, 10000);
-        }
-        
-        // Clean up on unmount or when currentPage/roundInfo changes
-        return () => {
-            if (pollingInterval.current) {
-                clearInterval(pollingInterval.current);
-            }
-        };
-    }, [playerId, roundInfo, currentPage]);
+    }, [playerId, roundId, roundStage, roundChanged]);
 
     const handleWinClick = () => {
         setSelectedWinner(playerTeam.id);

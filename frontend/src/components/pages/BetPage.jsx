@@ -27,22 +27,23 @@ const BetPage = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     
     // Get tournament context
-    const { roundInfo, currentPage } = useTournament();
+    const { roundInfo, roundChanged, refreshRoundInfo } = useTournament();
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
 
-    // Fetch betting table data on component mount or when roundInfo changes
+    // Extract only the properties we need to depend on
+    const roundId = roundInfo?.round_id;
+    const roundStage = roundInfo?.stage;
+
+    // Fetch betting table data only on mount or round/stage change
     useEffect(() => {
         const fetchData = async () => {
-            if (!playerId) {
-                setError('Player ID is required. Please add player_id to the URL.');
+            if (!playerId || !roundId) {
+                if (!playerId) {
+                    setError('Player ID is required. Please add player_id to the URL.');
+                }
                 setLoading(false);
-                return;
-            }
-            
-            if (!roundInfo) {
-                // Wait for roundInfo to be loaded from context
                 return;
             }
             
@@ -51,7 +52,7 @@ const BetPage = () => {
                 setError('');
                 
                 // Get all betting table data in a single API call
-                const data = await getBettingTable(playerId, roundInfo.round_id);
+                const data = await getBettingTable(playerId, roundId);
                 setTableData(data);
             } catch (err) {
                 console.error("Error fetching betting data:", err);
@@ -61,23 +62,9 @@ const BetPage = () => {
             }
         };
         
-        // Initial fetch when roundInfo is available
-        if (roundInfo) {
-            fetchData();
-        }
+        fetchData();
         
-        // Only set up polling if this is the current page
-        if (currentPage === 'bet' && roundInfo) {
-            pollingInterval.current = setInterval(fetchData, 10000);
-        }
-        
-        // Clean up on unmount or when currentPage/roundInfo changes
-        return () => {
-            if (pollingInterval.current) {
-                clearInterval(pollingInterval.current);
-            }
-        };
-    }, [playerId, roundInfo, currentPage]);
+    }, [playerId, roundId, roundStage, roundChanged]);
 
     const handleBetClick = (team) => {
         setSelectedTeam(team);

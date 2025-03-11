@@ -23,22 +23,23 @@ const BonusPage = () => {
     const [selectedBonus, setSelectedBonus] = useState(null);
     
     // Get tournament context
-    const { roundInfo, currentPage } = useTournament();
+    const { roundInfo, roundChanged } = useTournament();
+    
+    // Extract only the properties we need to depend on
+    const roundId = roundInfo?.round_id;
+    const roundStage = roundInfo?.stage;
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
 
-    // Fetch necessary data on component mount
+    // Fetch necessary data only on mount or round/stage change
     useEffect(() => {
         const fetchData = async () => {
-            if (!playerId) {
-                setError('Player ID is required. Please add player_id to the URL.');
+            if (!playerId || !roundId) {
+                if (!playerId) {
+                    setError('Player ID is required. Please add player_id to the URL.');
+                }
                 setLoading(false);
-                return;
-            }
-            
-            if (!roundInfo) {
-                // Wait for roundInfo to be loaded from context
                 return;
             }
             
@@ -52,7 +53,7 @@ const BonusPage = () => {
                 
                 // Check if player has an available bonus
                 if (playerTeamData) {
-                    const bonusData = await getBonusForTeam(playerTeamData.id, roundInfo.round_id);
+                    const bonusData = await getBonusForTeam(playerTeamData.id, roundId);
                     setBonus(bonusData);
                 }
             } catch (err) {
@@ -63,23 +64,9 @@ const BonusPage = () => {
             }
         };
         
-        // Initial fetch when roundInfo is available
-        if (roundInfo) {
-            fetchData();
-        }
+        fetchData();
         
-        // Only set up polling if this is the current page
-        if (currentPage === 'bonus' && roundInfo) {
-            pollingInterval.current = setInterval(fetchData, 10000);
-        }
-        
-        // Clean up on unmount or when currentPage/roundInfo changes
-        return () => {
-            if (pollingInterval.current) {
-                clearInterval(pollingInterval.current);
-            }
-        };
-    }, [playerId, roundInfo, currentPage]);
+    }, [playerId, roundId, roundStage, roundChanged]);
 
     const handleBonusSelect = (bonusType) => {
         setSelectedBonus(bonusType);

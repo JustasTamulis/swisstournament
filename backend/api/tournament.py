@@ -1,5 +1,9 @@
 import random
 from .models import Round, Team, Game, Odds, Bet, Bonus
+import logging
+
+# Get a logger for this file
+logger = logging.getLogger(__name__)
 
 # Betting stage
 
@@ -20,24 +24,34 @@ def generate_new_odds(round_id):
 
 def all_bets_placed(round_id):
     """Check if all teams have placed bets for this round"""
+    logger.debug("Checking if all bets are placed for round_id: %s", round_id)
     round_obj = Round.objects.get(id=round_id)
     teams = Team.objects.all()
+    
+    logger.debug("Found %d teams to check for bets", len(teams))
 
     # For each team, check if they have atleast one bet with bet_finished=True
     for team in teams:
         bets = Bet.objects.filter(team=team, round=round_obj)
+        logger.debug("Team %s has %d bets in round %s", team.name, len(bets), round_obj.number)
+        
         bet_finished = False
         for bet in bets:
-            if bet.finished:
+            if bet.bet_finish:
+                logger.debug("Team %s has a finished bet", team.name)
                 bet_finished = True
                 break
         if not bet_finished:
+            logger.debug("Team %s does not have a finished bet, returning False", team.name)
             return False
+    
+    logger.debug("All teams have placed their bets for round %s", round_obj.number)
     return True
 
 
 def move_to_joust_stage(round_id):
     """Move from betting stage to joust stage"""
+    logger.info("Moving to joust stage from round_id: %s", round_id)
     current_round = Round.objects.get(id=round_id)
     
     # Create new round with joust stage
@@ -46,13 +60,16 @@ def move_to_joust_stage(round_id):
         active=True,
         stage="joust"
     )
+    logger.info("Created new joust round: %s", new_round)
     
     # Set current round as inactive
     current_round.active = False
     current_round.save()
+    logger.debug("Set previous round %s as inactive", current_round.id)
     
     # Generate game pairs for the new round
-    generate_new_game_pairs(new_round.id)
+    games = generate_new_game_pairs(new_round.id)
+    logger.info("Generated %d game pairs for round %s", len(games), new_round.number)
     
     return new_round
 

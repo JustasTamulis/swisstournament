@@ -21,23 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-# Before using your Heroku app in production, make sure to review Django's deployment checklist:
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# Django requires a unique secret key for each Django app, that is used by several of its
-# security features. To simplify initial setup (without hardcoding the secret in the source
-# code) we set this to a random value every time the app starts. However, this will mean many
-# Django features break whenever an app restarts (for example, sessions will be logged out).
-# In your production Heroku apps you should set the `DJANGO_SECRET_KEY` config var explicitly.
-# Make sure to use a long unique value, like you would for a password. See:
-# https://docs.djangoproject.com/en/5.1/ref/settings/#std-setting-SECRET_KEY
-# https://devcenter.heroku.com/articles/config-vars
-# SECURITY WARNING: Keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    default=secrets.token_urlsafe(nbytes=64),
-)
-
 # Django has a debug mode which shows more detailed error messages and also means static assets
 # can be served without having to run the production `collectstatic` command. However, this
 # debug mode *must only be enabled in development* for security and performance reasons:
@@ -51,6 +34,31 @@ DEBUG = os.environ.get("ENVIRONMENT") == "development"
 # also explicitly exclude CI:
 # https://devcenter.heroku.com/articles/heroku-ci#immutable-environment-variables
 IS_HEROKU_APP = "DYNO" in os.environ and "CI" not in os.environ
+
+
+# Before using your Heroku app in production, make sure to review Django's deployment checklist:
+# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+
+# Django requires a unique secret key for each Django app, that is used by several of its
+# security features. To simplify initial setup (without hardcoding the secret in the source
+# code) we set this to a random value every time the app starts. However, this will mean many
+# Django features break whenever an app restarts (for example, sessions will be logged out).
+# In your production Heroku apps you should set the `DJANGO_SECRET_KEY` config var explicitly.
+# Make sure to use a long unique value, like you would for a password. See:
+# https://docs.djangoproject.com/en/5.1/ref/settings/#std-setting-SECRET_KEY
+# https://devcenter.heroku.com/articles/config-vars
+# SECURITY WARNING: Keep the secret key used in production secret!
+# For development, use a fixed secret key to maintain session consistency
+# In production, still use the environment variable
+if os.environ.get("ENVIRONMENT") == "development" or not IS_HEROKU_APP:
+    # Fixed secret key for development only
+    SECRET_KEY = "django-insecure-dev-key-donotuseinproduction12345678901234567890"
+else:
+    SECRET_KEY = os.environ.get(
+        "DJANGO_SECRET_KEY",
+        default=secrets.token_urlsafe(nbytes=64),
+    )
+
 
 if IS_HEROKU_APP:
     # On Heroku, it's safe to use a wildcard for `ALLOWED_HOSTS`, since the Heroku router performs
@@ -225,11 +233,19 @@ LOGGING = {
             "format": "[{levelname}] {message}",
             "style": "{",
         },
+        "verbose": {
+            "format": "[{asctime}] [{levelname}] {module} {message}",
+            "style": "{",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "simple",
+        },
+        "verbose_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
     # Fallback for anything not configured via `loggers`.
@@ -248,6 +264,11 @@ LOGGING = {
             # Suppress the WARNINGS from any HTTP 4xx responses (in particular for 404s caused by
             # web crawlers), but still show any ERRORs from HTTP 5xx responses/exceptions.
             "level": "ERROR",
+        },
+        "django.contrib.sessions": {
+            "handlers": ["verbose_console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
@@ -286,3 +307,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # print("STATIC_ROOT", STATIC_ROOT)
 # print("STATIC_URL", STATIC_URL)
 # print("STATICFILES_DIRS", STATICFILES_DIRS)
+

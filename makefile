@@ -60,6 +60,8 @@ collectstatic: ## Collect static files
 back: ## Run Django development server
 	cd backend && python manage.py runserver
 
+debug_back: ## Run Django development server with debug logging
+	cd backend && python -v manage.py runserver --traceback
 
 ########################################################################################
 ## Database related
@@ -79,6 +81,22 @@ data_to_heroku: ## Load data to Heroku
 	git commit -m "Update heroku_db_data.json"
 	git push heroku master
 	heroku run python backend/manage.py loaddata heroku_db_data.json
+
+view_session: ## View session data
+	cd backend && python manage.py shell -c "from django.contrib.sessions.models import Session; print('Available Sessions:'); [print(f'Session {s.pk} - Expires: {s.expire_date} - Data: {s.get_decoded()}') for s in Session.objects.all()]"
+
+clean_sessions: ## Clean all session data
+	cd backend && python manage.py shell -c "from django.contrib.sessions.models import Session; count = Session.objects.all().count(); Session.objects.all().delete(); print(f'Deleted {count} sessions')"
+
+debug_session: ## Debug session issues in detail
+	@echo "=== Django Version ==="
+	cd backend && python -c "import django; print(django.get_version())"
+	@echo "\n=== Session Engine ==="
+	cd backend && python -c "from django.conf import settings; print(settings.SESSION_ENGINE if hasattr(settings, 'SESSION_ENGINE') else 'default (django.contrib.sessions.backends.db)')"
+	@echo "\n=== Current Sessions ==="
+	cd backend && python manage.py shell -c "from django.contrib.sessions.models import Session; sessions = list(Session.objects.all()); print(f'{len(sessions)} sessions found'); [print(f'Session {s.pk} - Expires: {s.expire_date}') for s in sessions]"
+	@echo "\n=== Secret Key Info ==="
+	cd backend && python -c "from django.conf import settings; print(f'Secret key length: {len(settings.SECRET_KEY)}'); print(f'First 10 chars: {settings.SECRET_KEY[:10]}...')"
 
 ########################################################################################
 ## 

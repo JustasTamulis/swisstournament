@@ -25,7 +25,7 @@ function App() {
             <Route path="bonus" element={<BonusPage />} />
             <Route path="about" element={<AboutPage />} />
             {/* Secret dashboard route */}
-            <Route path="secret/dashboard" element={<DashboardPage />} />
+            <Route path="secret-dashboard" element={<DashboardPage />} />
           </Routes>
         }
       />

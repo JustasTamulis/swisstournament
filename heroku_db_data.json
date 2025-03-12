@@ -59,5 +59,1289 @@
       1
     ]
   }
+},
+{
+  "model": "api.footballclub",
+  "pk": 3,
+  "fields": {
+    "name": "zalgirisdsdsd",
+    "description": "Ohyes",
+    "attendance": 2332,
+    "city": "ALibababa",
+    "country": 1,
+    "league": 1,
+    "created": "2025-03-06T17:38:13.386Z",
+    "modified": "2025-03-06T17:38:13.386Z",
+    "characteristic": [
+      1
+    ]
+  }
+},
+{
+  "model": "api.footballclub",
+  "pk": 4,
+  "fields": {
+    "name": "zalgiris2222313",
+    "description": "fs",
+    "attendance": 551,
+    "city": "bimbabmba",
+    "country": 1,
+    "league": 1,
+    "created": "2025-03-06T17:41:46.351Z",
+    "modified": "2025-03-06T17:41:46.351Z",
+    "characteristic": [
+      1
+    ]
+  }
+},
+{
+  "model": "api.team",
+  "pk": 1,
+  "fields": {
+    "identifier": "d",
+    "name": "saldainis",
+    "description": "Vardas ir vardas",
+    "bets_available": 1,
+    "distance": 4,
+    "created": "2025-03-09T20:14:14.178Z",
+    "modified": "2025-03-12T08:51:29.687Z"
+  }
+},
+{
+  "model": "api.team",
+  "pk": 2,
+  "fields": {
+    "identifier": "c",
+    "name": "kaktusas",
+    "description": "Vardas ir vardas 2",
+    "bets_available": 1,
+    "distance": 0,
+    "created": "2025-03-09T20:14:36.928Z",
+    "modified": "2025-03-12T08:51:29.689Z"
+  }
+},
+{
+  "model": "api.team",
+  "pk": 3,
+  "fields": {
+    "identifier": "b",
+    "name": "papirusas",
+    "description": "Vardas ir pavardas 3",
+    "bets_available": 1,
+    "distance": 4,
+    "created": "2025-03-09T20:14:51.055Z",
+    "modified": "2025-03-12T08:51:29.692Z"
+  }
+},
+{
+  "model": "api.team",
+  "pk": 4,
+  "fields": {
+    "identifier": "a",
+    "name": "kaktomusa",
+    "description": "Strakis ir varkis",
+    "bets_available": 1,
+    "distance": 1,
+    "created": "2025-03-09T20:15:03.866Z",
+    "modified": "2025-03-12T08:51:29.698Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 1,
+  "fields": {
+    "number": 1,
+    "active": false,
+    "stage": "betting",
+    "created": "2025-03-09T20:15:32.211Z",
+    "modified": "2025-03-10T18:40:02.360Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 2,
+  "fields": {
+    "number": 1,
+    "active": false,
+    "stage": "joust",
+    "created": "2025-03-10T18:40:02.357Z",
+    "modified": "2025-03-10T18:41:05.476Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 3,
+  "fields": {
+    "number": 1,
+    "active": false,
+    "stage": "bonus",
+    "created": "2025-03-10T18:41:05.473Z",
+    "modified": "2025-03-10T18:41:51.801Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 4,
+  "fields": {
+    "number": 2,
+    "active": false,
+    "stage": "betting",
+    "created": "2025-03-10T18:41:51.797Z",
+    "modified": "2025-03-11T19:31:38.661Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 5,
+  "fields": {
+    "number": 2,
+    "active": false,
+    "stage": "joust",
+    "created": "2025-03-11T19:31:38.658Z",
+    "modified": "2025-03-11T19:53:59.376Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 6,
+  "fields": {
+    "number": 2,
+    "active": false,
+    "stage": "bonus",
+    "created": "2025-03-11T19:53:59.373Z",
+    "modified": "2025-03-11T21:29:21.518Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 7,
+  "fields": {
+    "number": 3,
+    "active": false,
+    "stage": "betting",
+    "created": "2025-03-11T21:29:21.513Z",
+    "modified": "2025-03-11T21:31:21.822Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 8,
+  "fields": {
+    "number": 3,
+    "active": false,
+    "stage": "joust",
+    "created": "2025-03-11T21:31:21.813Z",
+    "modified": "2025-03-12T07:16:17.609Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 9,
+  "fields": {
+    "number": 3,
+    "active": false,
+    "stage": "bonus",
+    "created": "2025-03-12T07:16:17.605Z",
+    "modified": "2025-03-12T07:22:14.051Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 10,
+  "fields": {
+    "number": 4,
+    "active": false,
+    "stage": "betting",
+    "created": "2025-03-12T07:22:14.048Z",
+    "modified": "2025-03-12T07:23:03.438Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 11,
+  "fields": {
+    "number": 4,
+    "active": false,
+    "stage": "joust",
+    "created": "2025-03-12T07:23:03.434Z",
+    "modified": "2025-03-12T07:23:55.301Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 12,
+  "fields": {
+    "number": 4,
+    "active": false,
+    "stage": "bonus",
+    "created": "2025-03-12T07:23:55.299Z",
+    "modified": "2025-03-12T08:45:30.763Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 13,
+  "fields": {
+    "number": 5,
+    "active": false,
+    "stage": "betting",
+    "created": "2025-03-12T08:45:30.759Z",
+    "modified": "2025-03-12T08:49:28.015Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 14,
+  "fields": {
+    "number": 5,
+    "active": false,
+    "stage": "joust",
+    "created": "2025-03-12T08:49:28.011Z",
+    "modified": "2025-03-12T08:50:13.704Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 15,
+  "fields": {
+    "number": 5,
+    "active": false,
+    "stage": "bonus",
+    "created": "2025-03-12T08:50:13.701Z",
+    "modified": "2025-03-12T08:51:29.705Z"
+  }
+},
+{
+  "model": "api.round",
+  "pk": 16,
+  "fields": {
+    "number": 6,
+    "active": true,
+    "stage": "betting",
+    "created": "2025-03-12T08:51:29.701Z",
+    "modified": "2025-03-12T08:51:29.701Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 1,
+  "fields": {
+    "team1": 2,
+    "team2": 4,
+    "win": true,
+    "round": 2,
+    "finished": true,
+    "created": "2025-03-10T18:40:02.366Z",
+    "modified": "2025-03-10T18:41:05.454Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 2,
+  "fields": {
+    "team1": 3,
+    "team2": 1,
+    "win": true,
+    "round": 2,
+    "finished": true,
+    "created": "2025-03-10T18:40:02.369Z",
+    "modified": "2025-03-10T18:40:36.915Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 3,
+  "fields": {
+    "team1": 4,
+    "team2": 3,
+    "win": false,
+    "round": 5,
+    "finished": true,
+    "created": "2025-03-11T19:31:38.667Z",
+    "modified": "2025-03-11T19:41:05.059Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 4,
+  "fields": {
+    "team1": 2,
+    "team2": 1,
+    "win": false,
+    "round": 5,
+    "finished": true,
+    "created": "2025-03-11T19:31:38.670Z",
+    "modified": "2025-03-11T19:53:59.355Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 5,
+  "fields": {
+    "team1": 4,
+    "team2": 3,
+    "win": false,
+    "round": 8,
+    "finished": true,
+    "created": "2025-03-11T21:31:21.833Z",
+    "modified": "2025-03-12T07:16:17.593Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 6,
+  "fields": {
+    "team1": 2,
+    "team2": 1,
+    "win": false,
+    "round": 8,
+    "finished": true,
+    "created": "2025-03-11T21:31:21.842Z",
+    "modified": "2025-03-11T21:55:10.440Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 7,
+  "fields": {
+    "team1": 2,
+    "team2": 1,
+    "win": false,
+    "round": 11,
+    "finished": true,
+    "created": "2025-03-12T07:23:03.443Z",
+    "modified": "2025-03-12T07:23:55.284Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 8,
+  "fields": {
+    "team1": 4,
+    "team2": 3,
+    "win": false,
+    "round": 11,
+    "finished": true,
+    "created": "2025-03-12T07:23:03.448Z",
+    "modified": "2025-03-12T07:23:42.815Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 9,
+  "fields": {
+    "team1": 3,
+    "team2": 1,
+    "win": false,
+    "round": 14,
+    "finished": true,
+    "created": "2025-03-12T08:49:28.022Z",
+    "modified": "2025-03-12T08:50:13.686Z"
+  }
+},
+{
+  "model": "api.game",
+  "pk": 10,
+  "fields": {
+    "team1": 2,
+    "team2": 4,
+    "win": false,
+    "round": 14,
+    "finished": true,
+    "created": "2025-03-12T08:49:28.025Z",
+    "modified": "2025-03-12T08:50:08.294Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 1,
+  "fields": {
+    "round": 1,
+    "team": 1,
+    "odd1": 2.0,
+    "odd2": 1.0,
+    "created": "2025-03-09T20:16:26.013Z",
+    "modified": "2025-03-09T20:16:26.013Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 2,
+  "fields": {
+    "round": 1,
+    "team": 2,
+    "odd1": 2.0,
+    "odd2": 1.0,
+    "created": "2025-03-09T20:16:32.805Z",
+    "modified": "2025-03-09T20:16:32.805Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 3,
+  "fields": {
+    "round": 1,
+    "team": 3,
+    "odd1": 2.0,
+    "odd2": 1.0,
+    "created": "2025-03-09T20:16:37.272Z",
+    "modified": "2025-03-09T20:16:37.272Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 4,
+  "fields": {
+    "round": 1,
+    "team": 4,
+    "odd1": 2.0,
+    "odd2": 1.0,
+    "created": "2025-03-09T20:16:42.044Z",
+    "modified": "2025-03-09T20:16:42.044Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 5,
+  "fields": {
+    "round": 4,
+    "team": 1,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-10T18:41:51.805Z",
+    "modified": "2025-03-10T18:41:51.805Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 6,
+  "fields": {
+    "round": 4,
+    "team": 2,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-10T18:41:51.809Z",
+    "modified": "2025-03-10T18:41:51.809Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 7,
+  "fields": {
+    "round": 4,
+    "team": 3,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-10T18:41:51.811Z",
+    "modified": "2025-03-10T18:41:51.811Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 8,
+  "fields": {
+    "round": 4,
+    "team": 4,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-10T18:41:51.814Z",
+    "modified": "2025-03-10T18:41:51.814Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 9,
+  "fields": {
+    "round": 7,
+    "team": 1,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-11T21:29:21.524Z",
+    "modified": "2025-03-11T21:29:21.524Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 10,
+  "fields": {
+    "round": 7,
+    "team": 2,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-11T21:29:21.530Z",
+    "modified": "2025-03-11T21:29:21.530Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 11,
+  "fields": {
+    "round": 7,
+    "team": 3,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-11T21:29:21.534Z",
+    "modified": "2025-03-11T21:29:21.534Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 12,
+  "fields": {
+    "round": 7,
+    "team": 4,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-11T21:29:21.540Z",
+    "modified": "2025-03-11T21:29:21.540Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 13,
+  "fields": {
+    "round": 10,
+    "team": 1,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T07:22:14.053Z",
+    "modified": "2025-03-12T07:22:14.053Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 14,
+  "fields": {
+    "round": 10,
+    "team": 2,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T07:22:14.056Z",
+    "modified": "2025-03-12T07:22:14.056Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 15,
+  "fields": {
+    "round": 10,
+    "team": 3,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T07:22:14.059Z",
+    "modified": "2025-03-12T07:22:14.059Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 16,
+  "fields": {
+    "round": 10,
+    "team": 4,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T07:22:14.061Z",
+    "modified": "2025-03-12T07:22:14.061Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 17,
+  "fields": {
+    "round": 13,
+    "team": 1,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:45:30.767Z",
+    "modified": "2025-03-12T08:45:30.767Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 18,
+  "fields": {
+    "round": 13,
+    "team": 2,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:45:30.769Z",
+    "modified": "2025-03-12T08:45:30.769Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 19,
+  "fields": {
+    "round": 13,
+    "team": 3,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:45:30.771Z",
+    "modified": "2025-03-12T08:45:30.771Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 20,
+  "fields": {
+    "round": 13,
+    "team": 4,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:45:30.775Z",
+    "modified": "2025-03-12T08:45:30.775Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 21,
+  "fields": {
+    "round": 16,
+    "team": 1,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:51:29.710Z",
+    "modified": "2025-03-12T08:51:29.710Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 22,
+  "fields": {
+    "round": 16,
+    "team": 2,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:51:29.713Z",
+    "modified": "2025-03-12T08:51:29.713Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 23,
+  "fields": {
+    "round": 16,
+    "team": 3,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:51:29.715Z",
+    "modified": "2025-03-12T08:51:29.715Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 24,
+  "fields": {
+    "round": 16,
+    "team": 4,
+    "odd1": 1.0,
+    "odd2": 1.0,
+    "created": "2025-03-12T08:51:29.719Z",
+    "modified": "2025-03-12T08:51:29.719Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 2,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 2,
+    "odds": 2,
+    "round": 1,
+    "bet_finish": true,
+    "created": "2025-03-10T16:20:51.781Z",
+    "modified": "2025-03-10T16:22:50.223Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 3,
+  "fields": {
+    "team": 4,
+    "bet_on_team": 3,
+    "odds": 3,
+    "round": 1,
+    "bet_finish": false,
+    "created": "2025-03-10T17:24:47.587Z",
+    "modified": "2025-03-10T17:24:47.587Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 4,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 1,
+    "odds": 1,
+    "round": 1,
+    "bet_finish": false,
+    "created": "2025-03-10T18:39:52.020Z",
+    "modified": "2025-03-10T18:39:52.020Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 5,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 3,
+    "round": 1,
+    "bet_finish": false,
+    "created": "2025-03-10T18:40:02.344Z",
+    "modified": "2025-03-10T18:40:02.344Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 6,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 7,
+    "round": 4,
+    "bet_finish": false,
+    "created": "2025-03-10T18:46:21.167Z",
+    "modified": "2025-03-10T18:46:21.167Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 7,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 7,
+    "round": 4,
+    "bet_finish": false,
+    "created": "2025-03-10T18:46:33.205Z",
+    "modified": "2025-03-10T18:46:33.205Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 8,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 1,
+    "odds": 5,
+    "round": 4,
+    "bet_finish": false,
+    "created": "2025-03-10T18:46:54.401Z",
+    "modified": "2025-03-10T18:46:54.401Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 9,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 4,
+    "odds": 8,
+    "round": 4,
+    "bet_finish": false,
+    "created": "2025-03-10T18:46:56.932Z",
+    "modified": "2025-03-10T18:46:56.932Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 10,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 2,
+    "odds": 6,
+    "round": 4,
+    "bet_finish": true,
+    "created": "2025-03-11T19:00:13.502Z",
+    "modified": "2025-03-11T19:00:13.502Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 11,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 7,
+    "round": 4,
+    "bet_finish": false,
+    "created": "2025-03-11T19:03:08.888Z",
+    "modified": "2025-03-11T19:03:08.888Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 12,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 7,
+    "round": 4,
+    "bet_finish": true,
+    "created": "2025-03-11T19:17:25.563Z",
+    "modified": "2025-03-11T19:17:25.563Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 13,
+  "fields": {
+    "team": 4,
+    "bet_on_team": 2,
+    "odds": 6,
+    "round": 4,
+    "bet_finish": true,
+    "created": "2025-03-11T19:20:47.814Z",
+    "modified": "2025-03-11T19:20:47.814Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 14,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 2,
+    "odds": 6,
+    "round": 4,
+    "bet_finish": true,
+    "created": "2025-03-11T19:24:36.544Z",
+    "modified": "2025-03-11T19:24:36.544Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 15,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 2,
+    "odds": 6,
+    "round": 4,
+    "bet_finish": true,
+    "created": "2025-03-11T19:31:38.642Z",
+    "modified": "2025-03-11T19:31:38.642Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 16,
+  "fields": {
+    "team": 4,
+    "bet_on_team": 2,
+    "odds": 10,
+    "round": 7,
+    "bet_finish": true,
+    "created": "2025-03-11T21:30:23.429Z",
+    "modified": "2025-03-11T21:30:23.429Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 17,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 1,
+    "odds": 9,
+    "round": 7,
+    "bet_finish": true,
+    "created": "2025-03-11T21:30:32.958Z",
+    "modified": "2025-03-11T21:30:32.959Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 18,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 2,
+    "odds": 10,
+    "round": 7,
+    "bet_finish": false,
+    "created": "2025-03-11T21:30:48.249Z",
+    "modified": "2025-03-11T21:30:48.250Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 19,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 4,
+    "odds": 12,
+    "round": 7,
+    "bet_finish": true,
+    "created": "2025-03-11T21:30:57.313Z",
+    "modified": "2025-03-11T21:30:57.313Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 20,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 3,
+    "odds": 11,
+    "round": 7,
+    "bet_finish": true,
+    "created": "2025-03-11T21:31:21.778Z",
+    "modified": "2025-03-11T21:31:21.778Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 21,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 3,
+    "odds": 15,
+    "round": 10,
+    "bet_finish": false,
+    "created": "2025-03-12T07:22:30.201Z",
+    "modified": "2025-03-12T07:22:30.202Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 22,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 3,
+    "odds": 15,
+    "round": 10,
+    "bet_finish": true,
+    "created": "2025-03-12T07:22:36.753Z",
+    "modified": "2025-03-12T07:22:36.753Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 23,
+  "fields": {
+    "team": 4,
+    "bet_on_team": 1,
+    "odds": 13,
+    "round": 10,
+    "bet_finish": true,
+    "created": "2025-03-12T07:22:44.489Z",
+    "modified": "2025-03-12T07:22:44.489Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 24,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 3,
+    "odds": 15,
+    "round": 10,
+    "bet_finish": true,
+    "created": "2025-03-12T07:22:52.573Z",
+    "modified": "2025-03-12T07:22:52.573Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 25,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 4,
+    "odds": 16,
+    "round": 10,
+    "bet_finish": true,
+    "created": "2025-03-12T07:23:03.420Z",
+    "modified": "2025-03-12T07:23:03.420Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 26,
+  "fields": {
+    "team": 1,
+    "bet_on_team": 2,
+    "odds": 18,
+    "round": 13,
+    "bet_finish": true,
+    "created": "2025-03-12T08:46:54.779Z",
+    "modified": "2025-03-12T08:46:54.779Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 27,
+  "fields": {
+    "team": 2,
+    "bet_on_team": 1,
+    "odds": 17,
+    "round": 13,
+    "bet_finish": true,
+    "created": "2025-03-12T08:48:32.976Z",
+    "modified": "2025-03-12T08:48:32.976Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 28,
+  "fields": {
+    "team": 3,
+    "bet_on_team": 2,
+    "odds": 18,
+    "round": 13,
+    "bet_finish": true,
+    "created": "2025-03-12T08:49:11.486Z",
+    "modified": "2025-03-12T08:49:11.486Z"
+  }
+},
+{
+  "model": "api.bet",
+  "pk": 29,
+  "fields": {
+    "team": 4,
+    "bet_on_team": 3,
+    "odds": 19,
+    "round": 13,
+    "bet_finish": true,
+    "created": "2025-03-12T08:49:28.001Z",
+    "modified": "2025-03-12T08:49:28.001Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 1,
+  "fields": {
+    "team": 1,
+    "round": 3,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-10T18:41:05.480Z",
+    "modified": "2025-03-10T18:41:51.790Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 2,
+  "fields": {
+    "team": 2,
+    "round": 3,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-10T18:41:05.482Z",
+    "modified": "2025-03-10T18:41:25.663Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 3,
+  "fields": {
+    "team": 3,
+    "round": 3,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-10T18:41:05.484Z",
+    "modified": "2025-03-10T18:41:44.035Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 4,
+  "fields": {
+    "team": 4,
+    "round": 3,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-10T18:41:05.492Z",
+    "modified": "2025-03-10T18:41:34.161Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 5,
+  "fields": {
+    "team": 1,
+    "round": 6,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-11T19:53:59.379Z",
+    "modified": "2025-03-11T21:29:21.430Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 6,
+  "fields": {
+    "team": 2,
+    "round": 6,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-11T19:53:59.382Z",
+    "modified": "2025-03-11T19:53:59.382Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 7,
+  "fields": {
+    "team": 3,
+    "round": 6,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-11T19:53:59.385Z",
+    "modified": "2025-03-11T19:53:59.385Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 8,
+  "fields": {
+    "team": 4,
+    "round": 6,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-11T19:53:59.388Z",
+    "modified": "2025-03-11T19:53:59.388Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 9,
+  "fields": {
+    "team": 1,
+    "round": 9,
+    "finished": true,
+    "description": "Used bonus: extra_bet",
+    "created": "2025-03-12T07:16:17.612Z",
+    "modified": "2025-03-12T07:22:14.034Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 10,
+  "fields": {
+    "team": 2,
+    "round": 9,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T07:16:17.616Z",
+    "modified": "2025-03-12T07:16:17.616Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 11,
+  "fields": {
+    "team": 3,
+    "round": 9,
+    "finished": true,
+    "description": "Used bonus: plus_distance",
+    "created": "2025-03-12T07:16:17.619Z",
+    "modified": "2025-03-12T07:21:20.559Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 12,
+  "fields": {
+    "team": 4,
+    "round": 9,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T07:16:17.621Z",
+    "modified": "2025-03-12T07:16:17.621Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 13,
+  "fields": {
+    "team": 1,
+    "round": 12,
+    "finished": true,
+    "description": "Used bonus: minus_distance",
+    "created": "2025-03-12T07:23:55.305Z",
+    "modified": "2025-03-12T08:45:30.739Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 14,
+  "fields": {
+    "team": 2,
+    "round": 12,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T07:23:55.307Z",
+    "modified": "2025-03-12T07:23:55.307Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 15,
+  "fields": {
+    "team": 3,
+    "round": 12,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T07:23:55.309Z",
+    "modified": "2025-03-12T07:23:55.309Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 16,
+  "fields": {
+    "team": 4,
+    "round": 12,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T07:23:55.311Z",
+    "modified": "2025-03-12T07:23:55.311Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 17,
+  "fields": {
+    "team": 1,
+    "round": 15,
+    "finished": true,
+    "description": "Used bonus: minus_distance",
+    "created": "2025-03-12T08:50:13.709Z",
+    "modified": "2025-03-12T08:51:29.683Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 18,
+  "fields": {
+    "team": 2,
+    "round": 15,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T08:50:13.713Z",
+    "modified": "2025-03-12T08:50:13.713Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 19,
+  "fields": {
+    "team": 3,
+    "round": 15,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T08:50:13.716Z",
+    "modified": "2025-03-12T08:50:13.716Z"
+  }
+},
+{
+  "model": "api.bonus",
+  "pk": 20,
+  "fields": {
+    "team": 4,
+    "round": 15,
+    "finished": true,
+    "description": "No bonus this round",
+    "created": "2025-03-12T08:50:13.719Z",
+    "modified": "2025-03-12T08:50:13.719Z"
+  }
 }
 ]

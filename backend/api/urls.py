@@ -1,13 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 router = DefaultRouter()
-router.register(r'countries', views.CountryViewSet, 'country')
-router.register(r'leagues', views.LeagueViewSet, 'league')
-router.register(r'characteristics', views.CharacteristicViewSet, 'characteristic')
-router.register(r'football-clubs', views.FootballClubViewSet, 'footballclub')
 router.register(r'teams', views.TeamViewSet, 'team')
 router.register(r'rounds', views.RoundViewSet, 'round')
 router.register(r'games', views.GameViewSet, 'game')
@@ -17,7 +12,7 @@ router.register(r'bonuses', views.BonusViewSet, 'bonus')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('place-bet/', csrf_exempt(views.place_bet), name='place-bet'),
+    path('place-bet/', views.place_bet, name='place-bet'),
     path('mark-game/', views.mark_game, name='mark-game'),
     path('use-bonus/', views.use_bonus, name='use-bonus'),
     path('get-round-info/', views.get_round_info, name='get-round-info'),

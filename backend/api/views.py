@@ -6,12 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.db import models
 import logging
 
-from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds, Bonus
+from .models import Team, Round, Game, Bet, Odds, Bonus
 from .serializers import (
-    CountrySerializer,
-    LeagueSerializer,
-    CharacteristicSerializer,
-    FootballClubSerializer,
     TeamSerializer,
     RoundSerializer,
     GameSerializer,
@@ -22,7 +18,6 @@ from .serializers import (
 from .tournament import (
     all_bets_placed,
     move_to_joust_stage,
-    move_track,
     check_tournament_winner,
     all_games_finished,
     process_winners,
@@ -43,58 +38,6 @@ def is_round_active(round_id):
         return True
     except Round.DoesNotExist:
         return False
-
-
-class CountryViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
-    queryset = Country.objects.all()
-    serializer_class = CountrySerializer
-
-    def list(self, request):
-        queryset = Country.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-    
-
-class LeagueViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
-    queryset = League.objects.all()
-    serializer_class = LeagueSerializer
-
-    def list(self, request):
-        queryset = League.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-    
-
-class CharacteristicViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
-    queryset = Characteristic.objects.all()
-    serializer_class = CharacteristicSerializer
-
-    def list(self, request):
-        queryset = Characteristic.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-    
-
-class FootballClubViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.AllowAny]
-    queryset = FootballClub.objects.all()
-    serializer_class = FootballClubSerializer
-
-    def list(self, request):
-        queryset = FootballClub.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-    
-    def create(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-    
 
 class TeamViewSet(viewsets.ViewSet):
     permission_classes = [permissions.AllowAny]

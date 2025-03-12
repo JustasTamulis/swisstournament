@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Country, League, Characteristic, FootballClub, Team, Round, Game, Bet, Odds, Bonus
+from .models import Team, Round, Game, Bet, Odds, Bonus
 
 # Custom admin for Team
 class TeamAdmin(admin.ModelAdmin):

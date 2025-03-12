@@ -569,3 +569,69 @@ def get_betting_table(request):
         
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def team_stage_statuses(request):
+    """Return status of teams in the current round for all stages"""
+    try:
+        round_id = request.query_params.get('round_id')
+        if not round_id:
+            return Response({'error': 'round_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the round and its number
+        round_obj = get_object_or_404(Round, id=round_id)
+        round_number = round_obj.number
+        
+        # Get all rounds with the same number (different stages)
+        all_rounds_same_number = Round.objects.filter(number=round_number)
+        
+        teams = Team.objects.all()
+        result = {}
+        
+        for team in teams:
+            # Check betting status across all betting rounds with this number
+            betting_rounds = all_rounds_same_number.filter(stage='betting')
+            bet_finished = False
+            if betting_rounds.exists():
+                for betting_round in betting_rounds:
+                    bets = Bet.objects.filter(team=team, round=betting_round)
+                    if bets.exists() and bets.filter(bet_finish=True).exists():
+                        bet_finished = True
+                        break
+            
+            # Check joust status across all joust rounds with this number
+            joust_rounds = all_rounds_same_number.filter(stage='joust')
+            joust_finished = False
+            if joust_rounds.exists():
+                for joust_round in joust_rounds:
+                    games = Game.objects.filter(
+                        (models.Q(team1=team) | models.Q(team2=team)) &
+                        models.Q(round=joust_round)
+                    )
+                    if games.exists() and games.filter(finished=True).exists():
+                        joust_finished = True
+                        break
+            
+            # Check bonus status across all bonus rounds with this number
+            bonus_rounds = all_rounds_same_number.filter(stage='bonus')
+            bonus_used = False
+            if bonus_rounds.exists():
+                for bonus_round in bonus_rounds:
+                    bonuses = Bonus.objects.filter(team=team, round=bonus_round)
+                    if bonuses.exists() and bonuses.filter(finished=True).exists():
+                        bonus_used = True
+                        break
+            
+            # Add to result dictionary
+            result[team.id] = {
+                'bet_finished': bet_finished,
+                'joust_finished': joust_finished,
+                'bonus_used': bonus_used
+            }
+        
+        return Response(result)
+        
+    except Exception as e:
+        logger.exception("Error in team_stage_statuses: %s", str(e))
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

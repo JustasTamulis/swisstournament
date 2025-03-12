@@ -309,53 +309,38 @@ def get_bonus_for_team(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from django.views.decorators.csrf import csrf_exempt
-
-@csrf_exempt  # Add this decorator to bypass CSRF protection for this endpoint
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def place_bet(request):
     """API endpoint for placing bets"""
-    logger.debug("place_bet function called with data: %s", request.data)
     try:
         team_id = request.data.get('team_id')
         bet_on_team_id = request.data.get('bet_on_team_id')
         round_id = request.data.get('round_id')
-        
-        logger.debug("Bet parameters - team_id: %s, bet_on_team_id: %s, round_id: %s", 
-                    team_id, bet_on_team_id, round_id)
-        
+
         # Check if the round is active
         if not is_round_active(round_id):
-            logger.warning("Attempted to place bet for inactive round: %s", round_id)
+            logger.warning("Attempted to place bet for inactive round: %s. Request data: %s", 
+                         round_id, request.data)
             return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         team = get_object_or_404(Team, id=team_id)
-        logger.debug("Found team: %s (ID: %s)", team.name, team.id)
-        
         bet_on_team = get_object_or_404(Team, id=bet_on_team_id)
-        logger.debug("Found bet_on_team: %s (ID: %s)", bet_on_team.name, bet_on_team.id)
-        
         round_obj = get_object_or_404(Round, id=round_id)
-        logger.debug("Found round: %s, stage: %s", round_obj.number, round_obj.stage)
         
         # Check if the team has available bets
         if team.bets_available <= 0:
-            logger.warning("Team %s has no available bets", team.name)
+            logger.warning("Team %s has no available bets. Request data: %s", 
+                         team.name, request.data)
             return Response({'error': 'No bets available for this team'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        logger.debug("Team %s has %d bets available", team.name, team.bets_available)
         
         try:
             odds = get_object_or_404(Odds, team=bet_on_team, round=round_obj)
-            logger.debug("Found odds for team %s: odd1=%s, odd2=%s", 
-                        bet_on_team.name, odds.odd1, odds.odd2)
         except Exception as e:
-            logger.error("Failed to find odds for team %s and round %s: %s", 
-                        bet_on_team.name, round_obj.number, str(e))
+            logger.error("Failed to find odds for team %s and round %s: %s. Request data: %s", 
+                        bet_on_team.name, round_obj.number, str(e), request.data)
             return Response({'error': f'No odds found for this team and round: {str(e)}'}, 
                           status=status.HTTP_400_BAD_REQUEST)
-        
         # Create the bet
         try:
             bet = Bet.objects.create(
@@ -365,9 +350,8 @@ def place_bet(request):
                 round=round_obj,
                 bet_finish=(team.bets_available == 1)
             )
-            logger.debug("Created bet: %s", bet)
         except Exception as e:
-            logger.error("Failed to create bet: %s", str(e))
+            logger.error("Failed to create bet: %s. Request data: %s", str(e), request.data)
             return Response({'error': f'Failed to create bet: {str(e)}'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
@@ -375,12 +359,14 @@ def place_bet(request):
         try:
             team.bets_available -= 1
             team.save()
-            logger.debug("Decreased bets_available for team %s to %d", 
-                        team.name, team.bets_available)
         except Exception as e:
-            logger.error("Failed to update team bets_available: %s", str(e))
+            logger.error("Failed to update team bets_available: %s. Request data: %s", 
+                       str(e), request.data)
             return Response({'error': f'Failed to update team: {str(e)}'}, 
                           status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info("Bet placed successfully for team %s on team %s", 
+                   team.name, bet_on_team.name)
         
         # Check if all bets are placed
         if all_bets_placed(round_id):
@@ -392,18 +378,17 @@ def place_bet(request):
                 'new_round': RoundSerializer(new_round).data
             })
         
-        logger.info("Bet placed successfully for team %s on team %s", 
-                   team.name, bet_on_team.name)
         return Response({'message': 'Bet placed successfully'})
     
     except Exception as e:
-        logger.exception("Error in place_bet function: %s", str(e))
+        logger.exception("Error in place_bet function: %s. Request data: %s", str(e), request.data)
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def mark_game(request):
     """API endpoint for recording game results"""
+    logger.debug("mark_game function called with data: %s", request.data)
     try:
         team_id = request.data.get('team_id')
         game_id = request.data.get('game_id')
@@ -412,6 +397,8 @@ def mark_game(request):
         
         # Check if the round is active
         if not is_round_active(round_id):
+            logger.warning("Attempted to mark game for inactive round: %s. Request data: %s", 
+                         round_id, request.data)
             return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         team = get_object_or_404(Team, id=team_id)
@@ -421,16 +408,21 @@ def mark_game(request):
         
         # Ensure the game belongs to the correct round
         if game.round.id != round_obj.id:
+            logger.warning("Game does not belong to specified round. Request data: %s", request.data)
             return Response({'error': 'Game does not belong to the specified round'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
         # Ensure the team is participating in this game
         if team.id != game.team1.id and team.id != game.team2.id:
+            logger.warning("Team %s is not participating in game %s. Request data: %s", 
+                         team.name, game.id, request.data)
             return Response({'error': 'Team is not participating in this game'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
         # Ensure the winner is one of the teams in the game
         if winner_team.id != game.team1.id and winner_team.id != game.team2.id:
+            logger.warning("Winner %s is not part of game %s. Request data: %s", 
+                         winner_team.name, game.id, request.data)
             return Response({'error': 'Winner must be one of the teams in the game'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
@@ -438,6 +430,8 @@ def mark_game(request):
         game.win = (winner_team.id == game.team1.id)  # True if team1 wins, False if team2 wins
         game.finished = True
         game.save()
+        
+        logger.info("Game result recorded successfully: %s won game %s", winner_team.name, game.id)
         
         # Check if all games in this round are finished
         if all_games_finished(round_id):
@@ -448,6 +442,7 @@ def mark_game(request):
             winner = check_tournament_winner()
             if winner:
                 # Move to finished stage
+                logger.info("Tournament winner determined: %s. Moving to finished stage", winner.name)
                 final_round = move_to_finished_stage(round_id, winner)
                 return Response({
                     'message': 'Game recorded. We have a tournament winner!',
@@ -456,6 +451,7 @@ def mark_game(request):
                 })
             else:
                 # Move to bonus stage
+                logger.info("All games finished for round %s. Moving to bonus stage", round_obj.number)
                 bonus_round = move_to_bonus_stage(round_id, winners)
                 return Response({
                     'message': 'All games finished. Moving to bonus stage.',
@@ -465,6 +461,7 @@ def mark_game(request):
         return Response({'message': 'Game result recorded successfully'})
         
     except Exception as e:
+        logger.exception("Error in mark_game function: %s. Request data: %s", str(e), request.data)
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -479,6 +476,8 @@ def use_bonus(request):
         
         # Check if the round is active
         if not is_round_active(round_id):
+            logger.warning("Attempted to use bonus for inactive round: %s. Request data: %s", 
+                         round_id, request.data)
             return Response({'error': 'This round is not active'}, status=status.HTTP_400_BAD_REQUEST)
         
         team = get_object_or_404(Team, id=team_id)
@@ -488,12 +487,16 @@ def use_bonus(request):
         try:
             bonus = Bonus.objects.get(team=team, round=round_obj, finished=False)
         except Bonus.DoesNotExist:
+            logger.warning("No unused bonus found for team %s in round %s. Request data: %s", 
+                         team.name, round_obj.number, request.data)
             return Response({'error': 'No unused bonus found for this team in current round'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
         # Check if bonus target exists, if required
         if "distance" in bonus_type:
             if not bonus_target_team_id:
+                logger.warning("Bonus target is required for %s. Request data: %s", 
+                             bonus_type, request.data)
                 return Response({'error': 'Bonus target is required for this bonus type'}, 
                                status=status.HTTP_400_BAD_REQUEST)
             target_team = get_object_or_404(Team, id=bonus_target_team_id)
@@ -506,6 +509,8 @@ def use_bonus(request):
             case "plus_distance":
                 # Do not add distance if the target team is 1 away from finishing
                 if target_team.distance >= 11:
+                    logger.warning("Cannot add distance to team %s at distance %s. Request data: %s", 
+                                 target_team.name, target_team.distance, request.data)
                     return Response({'error': 'Players must finish on their own'}, 
                                    status=status.HTTP_400_BAD_REQUEST)
                 else:
@@ -514,12 +519,16 @@ def use_bonus(request):
             case "minus_distance":
                 # Do not reduce distance if the target team is already at 0
                 if target_team.distance <= 0:
+                    logger.warning("Cannot reduce distance for team %s below 0. Request data: %s", 
+                                 target_team.name, request.data)
                     return Response({'error': 'Cannot reduce distance below 0'}, 
                                    status=status.HTTP_400_BAD_REQUEST)
                 else:
                     target_team.distance -= 1
                     target_team.save()
             case _:
+                logger.warning("Invalid bonus type: %s. Request data: %s", 
+                             bonus_type, request.data)
                 return Response({'error': 'Invalid bonus type'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Mark bonus as used and update description
@@ -527,8 +536,11 @@ def use_bonus(request):
         bonus.description = f"Used bonus: {bonus_type}"
         bonus.save()
         
+        logger.info("Bonus '%s' used successfully by team %s", bonus_type, team.name)
+        
         # Check if all bonuses are used in this round
         if all_bonuses_used(round_id):
+            logger.info("All bonuses are used for round %s, moving to new round", round_obj.number)
             # Start a new round with betting stage
             new_round = move_to_new_round(round_id)
             return Response({
@@ -542,6 +554,7 @@ def use_bonus(request):
         })
         
     except Exception as e:
+        logger.exception("Error in use_bonus function: %s. Request data: %s", str(e), request.data)
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])

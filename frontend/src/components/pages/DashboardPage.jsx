@@ -8,7 +8,7 @@ import { getAllTeams, getRoundInfo } from '../../services/tournamentService';
 
 // Heroku app URL as a constant for easy updating
 const HEROKU_URL = 'https://bday2025-daa089d5c915.herokuapp.com';
-const LOCAL_URL = 'http://127.0.0.1:5173';
+const LOCAL_URL = window.location.origin;
 
 const DashboardPage = () => {
     const [teams, setTeams] = useState([]);

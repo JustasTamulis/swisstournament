@@ -3,7 +3,7 @@ VERSION=3.12.7
 
 VENV_DIR=$(shell pyenv root)/versions/${VENV}
 VENV=${PROJECT}-${VERSION}
-
+BACKUP_DIR=backups
 
 
 help: ## Show this help
@@ -49,7 +49,7 @@ front: ## Run the frontend
 	cd frontend && npm run dev
 
 buildfront: ## Build the frontend
-	cd frontend && npm run build
+	cd frontend && npm run build --emptyOutDir
 
 ########################################################################################
 ## Django commands
@@ -62,6 +62,9 @@ back: ## Run Django development server
 
 debug_back: ## Run Django development server with debug logging
 	cd backend && python -v manage.py runserver --traceback
+
+## Run the full stack
+run: buildfront collectstatic back
 
 ########################################################################################
 ## Database related
@@ -99,7 +102,44 @@ debug_session: ## Debug session issues in detail
 	cd backend && python -c "from django.conf import settings; print(f'Secret key length: {len(settings.SECRET_KEY)}'); print(f'First 10 chars: {settings.SECRET_KEY[:10]}...')"
 
 ########################################################################################
-## 
+## Database Tools
 
-run: buildfront collectstatic back ## Run the full stack
+reset_db: ## Remove all data and migrations
+	@echo "Removing database and migrations..."
+	@rm -f backend/db.sqlite3
+	@find backend/api/migrations -type f -name "*.py" ! -name "__init__.py" -delete
+	@find backend/api/migrations -type f -name "*.pyc" -delete
+	@echo "Database reset complete"
 
+create_db: ## Create new database with migrations
+	cd backend && python manage.py makemigrations api
+	cd backend && python manage.py migrate
+	@echo "Database created successfully"
+
+generate_fixtures: ## Generate initial data fixtures
+	cd scripts && python create_initial_data.py
+
+populate_db: ## Load initial data from fixtures
+	cd backend && python manage.py loaddata api/fixtures/initial_data.json
+	@echo "Initial data loaded successfully"
+
+init_db: reset_db create_db populate_db ## Reset, create and populate database with initial data
+
+backup_db: ## Create a database backup
+	@mkdir -p $(BACKUP_DIR)
+	@timestamp=$$(date +%Y%m%d_%H%M%S); \
+	cd backend && python manage.py dumpdata api --indent 2 > ../$(BACKUP_DIR)/db_backup_$$timestamp.json; \
+	echo "Database backed up to $(BACKUP_DIR)/db_backup_$$timestamp.json"
+
+list_backups: ## List all database backups
+	@echo "Available backups:"
+	@ls -l $(BACKUP_DIR)
+
+restore_db: ## Restore database from a backup file
+	@read -p "Enter backup file path: " filepath; \
+	if [ -f "$$filepath" ]; then \
+		cd backend && python manage.py loaddata $$filepath; \
+		echo "Database restored from $$filepath"; \
+	else \
+		echo "Error: Backup file not found"; \
+	fi

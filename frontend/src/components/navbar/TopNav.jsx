@@ -8,8 +8,6 @@ import {
     Menu,
     MenuItem,
     Container,
-    Button,
-    Tooltip,
     Tabs,
     Tab,
     Chip,
@@ -23,7 +21,7 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import InfoIcon from '@mui/icons-material/Info';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'; // Add trophy icon
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournament } from '../../context/TournamentContext';
 
@@ -172,14 +170,14 @@ const TopNav = ({ content }) => {
 
     return (
         <>
-            <AppBar position="static" color="default" elevation={1}>
+            <AppBar position="static" color="default" elevation={1} sx={{ mb: 2 }}>
                 <Container maxWidth="xl">
-                    <Toolbar disableGutters>
+                    <Toolbar disableGutters sx={{ minHeight: {xs: '48px'} }}>
                         {/* Mobile menu */}
                         {isMobile && (
                             <>
                                 <IconButton
-                                    size="large"
+                                    size="small"
                                     aria-controls="menu-appbar"
                                     aria-haspopup="true"
                                     onClick={handleOpenNavMenu}
@@ -218,83 +216,69 @@ const TopNav = ({ content }) => {
                             </>
                         )}
 
-                        {/* App Title */}
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            sx={{
-                                mr: 2,
-                                fontWeight: 700,
-                                color: 'inherit',
-                                textDecoration: 'none',
-                                display: { xs: 'none', sm: 'flex' }
-                            }}
-                        >
-                            Carnival Tournament
-                        </Typography>
-                        
-                        {/* Mobile title - shorter */}
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            sx={{
-                                mr: 2,
-                                fontWeight: 700,
-                                color: 'inherit',
+                        {/* Navigation tabs - icons only */}
+                        <Tabs 
+                            value={getCurrentTabIndex()} 
+                            onChange={handleTabChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            sx={{ 
                                 flexGrow: 1,
-                                textDecoration: 'none',
-                                display: { xs: 'flex', sm: 'none' }
+                                '& .MuiTab-root': {
+                                    minWidth: '50px',
+                                    minHeight: '48px',
+                                    padding: '6px',
+                                }
                             }}
+                            centered
                         >
-                            Tournament
-                        </Typography>
-
-                        {/* Desktop navigation tabs */}
-                        {!isMobile && (
-                            <Tabs 
-                                value={getCurrentTabIndex()} 
-                                onChange={handleTabChange}
-                                indicatorColor="primary"
-                                textColor="primary"
-                                sx={{ flexGrow: 1 }}
-                            >
-                                {navItems.map((item) => (
+                            {navItems.map((item, index) => {
+                                const isCurrentTab = getCurrentTabIndex() === index;
+                                return (
                                     <Tab 
                                         key={item.name} 
                                         icon={item.icon} 
-                                        label={item.label}
-                                        iconPosition="start"
+                                        aria-label={item.label}
+                                        sx={{ 
+                                            border: isCurrentTab ? `1px solid ${theme.palette.primary.main}` : 'none',
+                                            borderRadius: '4px',
+                                            margin: '0 4px'
+                                        }}
                                     />
-                                ))}
-                            </Tabs>
-                        )}
-
-                        {/* Round status section */}
-                        {loading ? (
-                            <CircularProgress size={24} sx={{ ml: 2 }} />
-                        ) : roundInfo ? (
-                            <Box sx={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                ml: 'auto', 
-                                backgroundColor: 'rgba(0, 0, 0, 0.04)', 
-                                p: 1,
-                                borderRadius: 1
-                            }}>
-                                <Typography variant="subtitle2" sx={{ mr: 1, display: { xs: 'none', sm: 'block' } }}>
-                                    Round {roundInfo.number}:
-                                </Typography>
-                                {getStageBadge()}
-                            </Box>
-                        ) : null}
+                                );
+                            })}
+                        </Tabs>
                     </Toolbar>
                 </Container>
             </AppBar>
 
             {/* Main content */}
-            <Container maxWidth="xl" sx={{ mt: 2 }}>
+            <Container maxWidth="xl" sx={{ position: 'relative', pb: 7 }}>
                 {content}
             </Container>
+
+            {/* Floating round info at bottom center */}
+            {!loading && roundInfo && (
+                <Box sx={{ 
+                    position: 'fixed',
+                    bottom: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'background.paper',
+                    boxShadow: 3,
+                    borderRadius: '16px',
+                    px: 2,
+                    py: 1,
+                }}>
+                    <Typography variant="subtitle2" sx={{ mr: 1 }}>
+                        Round {roundInfo.number}:
+                    </Typography>
+                    {getStageBadge()}
+                </Box>
+            )}
         </>
     );
 };

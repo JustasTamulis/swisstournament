@@ -24,7 +24,7 @@ const BetPage = () => {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const pollingInterval = useRef(null);
+    const [previousOdds, setPreviousOdds] = useState({});
     
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,6 +58,32 @@ const BetPage = () => {
                 
                 // Get all betting table data in a single API call
                 const data = await getBettingTable(playerId, roundId);
+                
+                // If teams have odds, store them for future reference
+                if (data.teams && data.teams.some(team => team.odd1 && team.odd2)) {
+                    const newOdds = {};
+                    data.teams.forEach(team => {
+                        newOdds[team.id] = { odd1: team.odd1, odd2: team.odd2 };
+                    });
+                    setPreviousOdds(newOdds);
+                } 
+                // Otherwise, use previous odds if available
+                else if (Object.keys(previousOdds).length > 0) {
+                    // Copy the teams but restore the odds from previous odds
+                    const teamsWithOdds = data.teams.map(team => {
+                        if (previousOdds[team.id]) {
+                            return {
+                                ...team,
+                                odd1: previousOdds[team.id].odd1,
+                                odd2: previousOdds[team.id].odd2
+                            };
+                        }
+                        return team;
+                    });
+                    
+                    data.teams = teamsWithOdds;
+                }
+                
                 setTableData(data);
             } catch (err) {
                 console.error("Error fetching betting data:", err);
@@ -119,6 +145,23 @@ const BetPage = () => {
             
             // Refresh the betting table data
             const data = await getBettingTable(playerId, roundInfo.round_id);
+            
+            // Preserve odds when refreshing after a bet
+            if (Object.keys(previousOdds).length > 0) {
+                const teamsWithOdds = data.teams.map(team => {
+                    if (previousOdds[team.id]) {
+                        return {
+                            ...team,
+                            odd1: previousOdds[team.id].odd1,
+                            odd2: previousOdds[team.id].odd2
+                        };
+                    }
+                    return team;
+                });
+                
+                data.teams = teamsWithOdds;
+            }
+            
             setTableData(data);
             
             handleDialogClose();
@@ -218,14 +261,14 @@ const BetPage = () => {
                     {/* Display Betting Results */}
                     <Paper elevation={3} sx={{ mt: 4 }}>
                         <TableContainer>
-                            <Table>
+                            <Table size="small">
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Rank</TableCell>
                                         <TableCell>Team</TableCell>
-                                        <TableCell align="center">First Place Points</TableCell>
-                                        <TableCell align="center">Second Place Points</TableCell>
-                                        <TableCell align="center">Total Points</TableCell>
+                                        <TableCell align="center">1st Points</TableCell>
+                                        <TableCell align="center">2nd Points</TableCell>
+                                        <TableCell align="center">Total</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -238,7 +281,7 @@ const BetPage = () => {
                                             }}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>
-                                                    <Typography fontWeight={isPlayerTeam ? 'bold' : 'normal'}>
+                                                    <Typography fontWeight={isPlayerTeam ? 'bold' : 'normal'} variant="body2">
                                                         {result.team.name} {isPlayerTeam && '(You)'}
                                                     </Typography>
                                                 </TableCell>
@@ -262,35 +305,34 @@ const BetPage = () => {
                         
                         <Box sx={{ p: 2, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
-                                Points shown are based on the odds you received when betting on the winners.
+                                Points based on odds received when betting on the winners.
                             </Typography>
                         </Box>
                     </Paper>
                 </Box>
             ) : (
                 <>
-                    <Alert severity="info" sx={{ mb: 2 }}>
-                        You have {tableData.bets_available} bets available
-                    </Alert>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', textAlign: 'center' }}>
+                        Bets available: {tableData.bets_available}
+                    </Typography>
                     
                     <Paper elevation={3}>
                         <TableContainer>
-                            <Table>
+                            <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell rowSpan={2}>Team</TableCell>
-                                        <TableCell rowSpan={2}>Distance</TableCell>
-                                        <TableCell align="center" colSpan={2}>Odds</TableCell>
-                                        <TableCell align="center" colSpan={2}>Your Bets</TableCell>
-                                        {tableData.round_stage === 'betting' && tableData.bets_available > 0 && (
-                                            <TableCell align="center" rowSpan={2}>Action</TableCell>
-                                        )}
+                                        <TableCell sx={{ p: 1, fontSize: '0.8rem' }}>Team</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '40px' }}>Dist</TableCell>
+                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '80px' }}>Odds</TableCell>
+                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '80px' }}>Bets</TableCell>
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell align="center">1st Place</TableCell>
-                                        <TableCell align="center">2nd Place</TableCell>
-                                        <TableCell align="center">1st Place</TableCell>
-                                        <TableCell align="center">2nd Place</TableCell>
+                                        <TableCell sx={{ p: 1 }}></TableCell>
+                                        <TableCell sx={{ p: 1 }}></TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>1st</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>2nd</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>1st</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>2nd</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -298,34 +340,35 @@ const BetPage = () => {
                                         <TableRow key={team.id} sx={{
                                             bgcolor: team.is_player_team ? 'rgba(63, 81, 181, 0.08)' : 'inherit'
                                         }}>
-                                            <TableCell component="th" scope="row">
-                                                <Typography fontWeight={team.is_player_team ? 'bold' : 'normal'}>
+                                            <TableCell component="th" scope="row" sx={{ p: 1 }}>
+                                                <Typography variant="body2" fontWeight={team.is_player_team ? 'bold' : 'normal'}>
                                                     {team.name} {team.is_player_team && '(You)'}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>{team.distance}/{finishDistance}</TableCell>
-                                            <TableCell align="center">{team.odd1}</TableCell>
-                                            <TableCell align="center">{team.odd2}</TableCell>
-                                            <TableCell align="center">{team.bet1}</TableCell>
-                                            <TableCell align="center">{team.bet2}</TableCell>
-                                            {tableData.round_stage === 'betting' && tableData.bets_available > 0 && (
-                                                <TableCell align="center">
-                                                    {!team.is_player_team ? (
-                                                        <Button 
-                                                            variant="contained" 
-                                                            size="small" 
-                                                            color="primary"
-                                                            onClick={() => handleBetClick(team)}
-                                                        >
-                                                            Bet
-                                                        </Button>
-                                                    ) : (
-                                                        <Typography variant="caption" color="textSecondary">
-                                                            Can't bet on yourself
-                                                        </Typography>
-                                                    )}
-                                                </TableCell>
-                                            )}
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.distance}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.odd1}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.odd2}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet1}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet2}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, width: '60px' }}>
+                                                {!team.is_player_team && (
+                                                    <Button 
+                                                        variant="contained" 
+                                                        size="small" 
+                                                        color="primary"
+                                                        onClick={() => handleBetClick(team)}
+                                                        disabled={tableData.round_stage !== 'betting' || tableData.bets_available <= 0}
+                                                        sx={{ 
+                                                            py: 0, 
+                                                            px: 1, 
+                                                            minWidth: '40px',
+                                                            fontSize: '0.75rem'
+                                                        }}
+                                                    >
+                                                        Bet
+                                                    </Button>
+                                                )}
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

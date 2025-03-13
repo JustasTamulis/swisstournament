@@ -24,7 +24,9 @@ const JoustPage = () => {
     const [playerTeam, setPlayerTeam] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [location, setLocation] = useState(''); // Add state for location
+    const [location, setLocation] = useState('');
+    const [lastGameResult, setLastGameResult] = useState(null);
+    const [gameWinner, setGameWinner] = useState(null);
     
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -69,7 +71,27 @@ const JoustPage = () => {
                             setOpponentDescription(opponentData.opponent_description || '');
                             setGameFinished(opponentData.game_finished || false);
                             setGameId(opponentData.game_id);
-                            setLocation(opponentData.location || ''); // Store the location
+                            setLocation(opponentData.location || '');
+                            
+                            // Store game result information if the game is finished
+                            if (opponentData.game_finished) {
+                                // Determine the winner based on the game data
+                                const games = await getGamesForRound(roundId);
+                                const thisGame = games.find(g => g.id === opponentData.game_id);
+                                if (thisGame) {
+                                    const winnerTeam = thisGame.win ? 
+                                        { id: thisGame.team1, name: playerTeamData.id === thisGame.team1 ? playerTeamData.name : opponentData.opponent_name } :
+                                        { id: thisGame.team2, name: playerTeamData.id === thisGame.team2 ? playerTeamData.name : opponentData.opponent_name };
+                                    
+                                    setGameWinner(winnerTeam);
+                                    setLastGameResult({
+                                        player: playerTeamData.name,
+                                        opponent: opponentData.opponent_name,
+                                        location: opponentData.location,
+                                        winner: winnerTeam.name
+                                    });
+                                }
+                            }
                         } catch (opponentError) {
                             // If there's an error getting opponent, it might mean all games are finished
                             console.log("No opponent found, might be finished:", opponentError);
@@ -126,10 +148,18 @@ const JoustPage = () => {
             setLoading(true);
             await markGame(playerTeam.id, gameId, selectedWinner, roundInfo.round_id);
             
-            // Clear opponent info after marking the game
-            setOpponent(null);
-            setOpponentId(null);
-            setGameId(null);
+            // Store the result for display after completion
+            const winner = selectedWinner === playerTeam.id ? playerTeam.name : opponent;
+            setLastGameResult({
+                player: playerTeam.name,
+                opponent: opponent,
+                location: location,
+                winner: winner
+            });
+            
+            // Set game as finished and store winner
+            setGameFinished(true);
+            setGameWinner({ id: selectedWinner, name: winner });
             
             handleDialogClose();
         } catch (err) {
@@ -173,61 +203,117 @@ const JoustPage = () => {
                     </Typography>
                 </Paper>
             ) : opponent ? (
-                <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+                <Paper elevation={3} sx={{ p: 3 }}>
                     {roundStage === 'final' && (
                         <Alert severity="warning" sx={{ mb: 3 }}>
                             This is a tiebreaker match! The winner will determine final tournament placement.
                         </Alert>
                     )}
                     
-                    <Typography variant="h5" gutterBottom>
-                        Your {roundStage === 'final' ? 'tiebreaker' : 'next'} opponent is:
-                    </Typography>
-                    <Typography variant="h4" color="primary" gutterBottom>
-                        {opponent}
-                    </Typography>
-                    
-                    {/* Display match location */}
-                    {location && (
+                    {/* VS match display with staggered team names */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        mt: 2,
+                        mb: 4,
+                        position: 'relative'
+                    }}>
+                        {/* Player's team */}
                         <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            mt: 2,
-                            mb: 2 
+                            alignSelf: 'flex-start', 
+                            mb: 1,
+                            bgcolor: 'rgba(63, 81, 181, 0.1)',
+                            px: 2,
+                            py: 1,
+                            borderRadius: '4px'
                         }}>
-                            <LocationOnIcon color="secondary" sx={{ mr: 1 }} />
-                            <Typography variant="h6" color="secondary">
-                                Location: {location}
+                            <Typography variant="h5" fontWeight="bold" color="primary">
+                                {playerTeam?.name}
                             </Typography>
                         </Box>
-                    )}
+                        
+                        {/* VS indicator */}
+                        <Box sx={{ 
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            bgcolor: 'background.paper',
+                            borderRadius: '50%',
+                            width: 40,
+                            height: 40,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: 1,
+                            zIndex: 2,
+                            border: '1px solid',
+                            borderColor: 'divider'
+                        }}>
+                            <Typography variant="body1" fontWeight="bold">VS</Typography>
+                        </Box>
+                        
+                        {/* Opponent's team */}
+                        <Box sx={{ 
+                            alignSelf: 'flex-end', 
+                            mt: 1,
+                            bgcolor: 'rgba(244, 67, 54, 0.1)',
+                            px: 2,
+                            py: 1,
+                            borderRadius: '4px'
+                        }}>
+                            <Typography variant="h5" fontWeight="bold" color="error">
+                                {opponent}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    
+                    {/* Location display */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        mb: 3 
+                    }}>
+                        <LocationOnIcon color="secondary" sx={{ mr: 1 }} />
+                        <Typography variant="body1" color="secondary" fontWeight="medium">
+                            Location: {location}
+                        </Typography>
+                    </Box>
                     
                     {opponentDescription && (
-                        <Typography variant="body1" sx={{ mt: 2, mb: 2, fontStyle: 'italic' }}>
+                        <Typography variant="body2" sx={{ my: 2, fontStyle: 'italic', textAlign: 'center' }}>
                             "{opponentDescription}"
                         </Typography>
                     )}
                     
                     <Divider sx={{ my: 2 }} />
                     
-                    <Alert severity="info" sx={{ mb: 3 }}>
-                        Your match will take place at the <strong>{location}</strong> location. Please meet your opponent there.
-                    </Alert>
-                    
                     {gameFinished ? (
-                        <Box sx={{ mt: 3 }}>
-                            <Alert severity="info">
-                                This game has already been completed. Please wait for the results.
+                        <Box sx={{ mt: 3, textAlign: 'center' }}>
+                            <Alert severity="info" sx={{ display: 'inline-block' }}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <Typography variant="h6" gutterBottom>
+                                        Match Completed
+                                    </Typography>
+                                    <Typography>
+                                        Winner: <strong>{gameWinner?.name}</strong>
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mt: 1 }}>
+                                        This game has been recorded. The winner has advanced on the track.
+                                    </Typography>
+                                </Box>
                             </Alert>
                         </Box>
                     ) : (
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
                             <Button 
                                 variant="contained" 
                                 color="success"
                                 onClick={handleWinClick}
                                 disabled={loading}
+                                sx={{ px: 4, py: 1 }}
                             >
                                 I Won
                             </Button>
@@ -236,11 +322,95 @@ const JoustPage = () => {
                                 color="error"
                                 onClick={handleLoseClick}
                                 disabled={loading}
+                                sx={{ px: 4, py: 1 }}
                             >
                                 I Lost
                             </Button>
                         </Box>
                     )}
+                </Paper>
+            ) : lastGameResult ? (
+                <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="h6" gutterBottom>
+                        Last Match Result
+                    </Typography>
+                    
+                    {/* Last match result display */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        mt: 2,
+                        mb: 2,
+                        position: 'relative'
+                    }}>
+                        {/* Player's team */}
+                        <Box sx={{ 
+                            alignSelf: 'flex-start', 
+                            mb: 1,
+                            bgcolor: 'rgba(63, 81, 181, 0.1)',
+                            px: 2,
+                            py: 1,
+                            borderRadius: '4px'
+                        }}>
+                            <Typography variant="h6" color="primary">
+                                {lastGameResult.player}
+                            </Typography>
+                        </Box>
+                        
+                        {/* VS indicator */}
+                        <Box sx={{ 
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            bgcolor: 'background.paper',
+                            borderRadius: '50%',
+                            width: 30,
+                            height: 30,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: 1,
+                            zIndex: 2,
+                            border: '1px solid',
+                            borderColor: 'divider'
+                        }}>
+                            <Typography variant="body2" fontWeight="bold">VS</Typography>
+                        </Box>
+                        
+                        {/* Opponent's team */}
+                        <Box sx={{ 
+                            alignSelf: 'flex-end', 
+                            mt: 1,
+                            bgcolor: 'rgba(244, 67, 54, 0.1)',
+                            px: 2,
+                            py: 1,
+                            borderRadius: '4px'
+                        }}>
+                            <Typography variant="h6" color="error">
+                                {lastGameResult.opponent}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 2 }}>
+                        <LocationOnIcon fontSize="small" sx={{ mr: 0.5 }} />
+                        <Typography variant="body2" color="text.secondary">
+                            {lastGameResult.location}
+                        </Typography>
+                    </Box>
+                    
+                    <Chip 
+                        label={`Winner: ${lastGameResult.winner}`}
+                        color="success"
+                        variant="outlined"
+                        sx={{ mt: 1 }}
+                    />
+                    
+                    <Typography variant="body2" sx={{ mt: 3 }}>
+                        No more matches scheduled for this round.
+                    </Typography>
                 </Paper>
             ) : (
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>

@@ -27,7 +27,7 @@ const BetPage = () => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     
     // Get tournament context
-    const { roundInfo, roundChanged, refreshRoundInfo } = useTournament();
+    const { roundInfo, roundChanged, refreshRoundInfo, finishDistance } = useTournament();
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
@@ -161,7 +161,7 @@ const BetPage = () => {
                                             {team.name} {team.is_player_team && '(You)'}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell>{team.distance}/12</TableCell>
+                                    <TableCell>{team.distance}/{finishDistance}</TableCell>
                                     <TableCell align="center">{team.odd1}</TableCell>
                                     <TableCell align="center">{team.odd2}</TableCell>
                                     <TableCell align="center">{team.bet1}</TableCell>

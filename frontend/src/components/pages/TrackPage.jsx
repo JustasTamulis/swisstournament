@@ -16,7 +16,7 @@ const TrackPage = () => {
     const animationTimeout = useRef(null);
     
     // Get tournament context
-    const { roundInfo, roundChanged } = useTournament();
+    const { roundInfo, roundChanged, finishDistance } = useTournament();
     
     // Get the player_id from URL params
     const playerId = searchParams.get('player_id');
@@ -129,7 +129,7 @@ const TrackPage = () => {
                             overflow: 'hidden'
                         }}>
                             <Box sx={{ 
-                                width: `${(team.distance / 12) * 100}%`, 
+                                width: `${(team.distance / finishDistance) * 100}%`, 
                                 height: '100%', 
                                 bgcolor: playerTeam?.id === team.id ? 'primary.dark' : 'primary.main',
                                 borderRadius: 1,
@@ -140,14 +140,14 @@ const TrackPage = () => {
                                 transition: animating ? 'width 1s ease-in-out' : 'none'
                             }}>
                                 <Typography variant="body2" color="white">
-                                    {team.distance}/12
+                                    {team.distance}/{finishDistance}
                                 </Typography>
                             </Box>
                         </Box>
                     </Box>
                 ))}
                 <Typography variant="caption" display="block" sx={{ mt: 2 }}>
-                    First team to reach 12 points wins the tournament!
+                    First team to reach {finishDistance} points wins the tournament!
                 </Typography>
             </Paper>
         </Box>

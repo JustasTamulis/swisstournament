@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
-import { getRoundInfo } from '../services/tournamentService';
+import { getRoundInfo, getTournamentSettings } from '../services/tournamentService';
 import { useLocation } from 'react-router-dom';
 
 export const TournamentContext = createContext();
@@ -9,6 +9,7 @@ export const TournamentProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [roundChanged, setRoundChanged] = useState(false);
+    const [finishDistance, setFinishDistance] = useState(12); // Temporary default
     const previousRoundInfoRef = useRef(null);
     
     const location = useLocation();
@@ -16,6 +17,18 @@ export const TournamentProvider = ({ children }) => {
     // Extract current page from path
     const currentPage = location.pathname.split('/').filter(Boolean)[0] || 'track';
     
+    // Fetch tournament settings like finish distance
+    const fetchTournamentSettings = useCallback(async () => {
+        try {
+            const data = await getTournamentSettings();
+            if (data && data.finish_distance) {
+                setFinishDistance(data.finish_distance);
+            }
+        } catch (err) {
+            console.error("Error fetching tournament settings:", err);
+        }
+    }, []);
+
     // Fetch round info - this is common data needed by all pages
     const fetchRoundInfo = useCallback(async () => {
         try {
@@ -47,6 +60,10 @@ export const TournamentProvider = ({ children }) => {
     
     // Initial fetch on component mount
     useEffect(() => {
+        // Get tournament settings first
+        fetchTournamentSettings();
+        
+        // Then get round info
         fetchRoundInfo();
         
         // Set up polling for round info (this runs constantly but is lightweight)
@@ -55,7 +72,7 @@ export const TournamentProvider = ({ children }) => {
         return () => {
             clearInterval(roundInfoInterval);
         };
-    }, [fetchRoundInfo]);
+    }, [fetchRoundInfo, fetchTournamentSettings]);
     
     // Context value
     const value = {
@@ -64,6 +81,7 @@ export const TournamentProvider = ({ children }) => {
         error,
         currentPage,
         roundChanged,
+        finishDistance,
         refreshRoundInfo: fetchRoundInfo
     };
     

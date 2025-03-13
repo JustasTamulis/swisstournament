@@ -5,8 +5,12 @@ import FlagIcon from '@mui/icons-material/Flag';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SportsIcon from '@mui/icons-material/Sports';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import { useTournament } from '../../context/TournamentContext';
 
 const AboutPage = () => {
+    // Get the finish distance from context
+    const { finishDistance } = useTournament();
+    
     return (
         <Box sx={{ padding: 2 }}>
             <Box className="TopBar" sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -38,8 +42,8 @@ const AboutPage = () => {
                             <FlagIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText 
-                            primary="Race to 12 Points" 
-                            secondary="The first team to reach 12 points on the track wins the tournament." 
+                            primary={`Race to ${finishDistance} Points`} 
+                            secondary={`The first team to reach ${finishDistance} points on the track wins the tournament.`} 
                         />
                     </ListItem>
                     

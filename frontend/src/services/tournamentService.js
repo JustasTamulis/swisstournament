@@ -123,4 +123,15 @@ export const getBettingTable = async (identifier, roundId) => {
     }
 };
 
+// Get tournament settings like finish distance
+export const getTournamentSettings = async () => {
+    try {
+        const response = await tournamentApi.get('get-tournament-settings/');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching tournament settings:", error);
+        throw error;
+    }
+};
+
 export default tournamentApi;

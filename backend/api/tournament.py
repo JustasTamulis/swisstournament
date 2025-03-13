@@ -1,6 +1,7 @@
 import random
 from .models import Round, Team, Game, Odds, Bet, Bonus
 import logging
+from django.conf import settings
 
 # Get a logger for this file
 logger = logging.getLogger(__name__)
@@ -198,8 +199,9 @@ def move_to_new_round(round_id):
 # Finished stage
 
 def check_tournament_winner():
-    """Check if there's a winner (distance > 12)"""
-    winner = Team.objects.filter(distance__gt=12).first()
+    """Check if there's a winner (distance > setting value)"""
+    finish_distance = settings.TOURNAMENT_FINISH_DISTANCE
+    winner = Team.objects.filter(distance__gt=finish_distance).first()
     if winner:
         return winner
     return None

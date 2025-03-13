@@ -635,3 +635,13 @@ def team_stage_statuses(request):
     except Exception as e:
         logger.exception("Error in team_stage_statuses: %s", str(e))
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_tournament_settings(request):
+    """Return tournament settings like finish distance"""
+    from django.conf import settings
+    
+    return Response({
+        'finish_distance': settings.TOURNAMENT_FINISH_DISTANCE
+    })

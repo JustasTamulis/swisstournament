@@ -8,19 +8,81 @@ logger = logging.getLogger(__name__)
 
 # Betting stage
 
+def new_odds_logic(distances: list[int], finish_distance: int) -> list[tuple]:
+    """
+    Calculate odds for teams based on their distances from the finish line.
+    
+    Args:
+        distances: List of team distances
+        finish_distance: Distance needed to finish the tournament
+    
+    Returns:
+        List of tuples (odd1, odd2) for each team
+    """
+    # Find max and min distances
+    max_distance = max(distances) if distances else 0
+    min_distance = min(distances) if distances else 0
+    
+    results = []
+    
+    for distance in distances:
+        # Calculate normalized position (closer to 1 means closer to finish)
+        normalized_position = distance / finish_distance
+        
+        # Base multiplier - teams further from finish get higher odds
+        # Use an inverse relationship
+        base_multiplier = 1.5 + (1 - normalized_position) * 3.5
+        
+        # Adjust based on relative position to other teams
+        if max_distance > min_distance:  # Avoid division by zero
+            relative_position = (distance - min_distance) / (max_distance - min_distance)
+            position_factor = 1 - relative_position  # Lower is better positioned
+            
+            # Apply position adjustment (0.5 to 1.5 multiplier)
+            position_adjustment = 1 + position_factor
+        else:
+            # All teams at same distance
+            position_adjustment = 1.0
+            
+        # Calculate odds with minimum value of 1.1
+        odd1 = max(1.1, base_multiplier * position_adjustment)
+        
+        # odd2 is always lower than odd1 but still proportional
+        odd2 = max(1.05, odd1 * 0.7)  # 70% of odd1, minimum 1.05
+        
+        # Round to 2 decimal places
+        odd1 = round(odd1, 2)
+        odd2 = round(odd2, 2)
+        
+        results.append((odd1, odd2))
+    
+    return results
+
 def generate_new_odds(round_id):
-    """Generate new odds for the given round. Currently all odds = 1.0"""
+    """Generate new odds for the given round based on team distances."""
     round_obj = Round.objects.get(id=round_id)
     teams = Team.objects.all()
     
-    # For simplicity, set all odds to 1.0 for all teams
-    for team in teams:
+    # Get finish distance from settings
+    finish_distance = settings.TOURNAMENT_FINISH_DISTANCE
+    
+    # Get all team distances
+    team_distances = [team.distance for team in teams]
+    
+    # Calculate odds using the logic function
+    odds_results = new_odds_logic(team_distances, finish_distance)
+    
+    # Create the odds objects in the database
+    for team, (odd1, odd2) in zip(teams, odds_results):
         Odds.objects.create(
             round=round_obj,
             team=team,
-            odd1=1.0,
-            odd2=1.0
+            odd1=odd1,
+            odd2=odd2
         )
+        
+        logger.debug(f"Team {team.name}: distance={team.distance}, odds={odd1}/{odd2}")
+    
     return True
 
 def all_bets_placed(round_id):

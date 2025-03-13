@@ -3,12 +3,14 @@ import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
     TableHead, TableRow, Button, CircularProgress, Alert, Link,
     Divider, Card, CardContent, CardActions, Grid, Dialog, DialogActions,
-    DialogContent, DialogContentText, DialogTitle
+    DialogContent, DialogContentText, DialogTitle, Tooltip, Chip
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { 
-    getAllTeams, getRoundInfo, getTournamentResults, setSecondPlaceWinner 
+    getAllTeams, getRoundInfo, getTournamentResults, setSecondPlaceWinner,
+    getGamesForRound
 } from '../../services/tournamentService';
 
 // Heroku app URL as a constant for easy updating
@@ -27,6 +29,8 @@ const DashboardPage = () => {
     const [selectedTeamId, setSelectedTeamId] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [firstPlace, setFirstPlace] = useState(null);
+    const [games, setGames] = useState([]);
+    const [teamLocations, setTeamLocations] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,6 +47,26 @@ const DashboardPage = () => {
                 // Fetch stage statuses for all teams
                 const statuses = await fetchTeamStageStatuses(teamsData, roundData?.round_id);
                 setStageStatuses(statuses);
+                
+                // Fetch games for current round to get locations
+                if (roundData.round_id) {
+                    try {
+                        const gamesData = await getGamesForRound(roundData.round_id);
+                        setGames(gamesData);
+                        
+                        // Create a mapping of team ID to their game location
+                        const locationMap = {};
+                        gamesData.forEach(game => {
+                            if (game.location) {
+                                locationMap[game.team1] = game.location;
+                                locationMap[game.team2] = game.location;
+                            }
+                        });
+                        setTeamLocations(locationMap);
+                    } catch (gameError) {
+                        console.error("Failed to fetch games:", gameError);
+                    }
+                }
                 
                 // If in finished stage, get tournament results
                 if (roundData.stage === 'finished') {
@@ -198,6 +222,11 @@ const DashboardPage = () => {
         }
     };
 
+    // Helper function to get team location
+    const getTeamLocation = (teamId) => {
+        return teamLocations[teamId] || 'Not assigned';
+    };
+
     if (loading && teams.length === 0) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -339,6 +368,7 @@ const DashboardPage = () => {
                                 <TableCell>Description</TableCell>
                                 <TableCell>Bets Available</TableCell>
                                 <TableCell>Distance</TableCell>
+                                <TableCell>Location</TableCell>
                                 <TableCell align="center">Bet Status</TableCell>
                                 <TableCell align="center">Joust Status</TableCell>
                                 <TableCell align="center">Bonus Status</TableCell>
@@ -353,6 +383,9 @@ const DashboardPage = () => {
                                 
                                 // Get team status (either real from API or mock data for demo)
                                 const teamStatus = stageStatuses[team.id] || getMockStatusForTeam(team.id);
+                                
+                                // Get team location
+                                const location = getTeamLocation(team.id);
                                 
                                 return (
                                     <TableRow key={team.id}>
@@ -371,6 +404,23 @@ const DashboardPage = () => {
                                         </TableCell>
                                         <TableCell>{team.bets_available}</TableCell>
                                         <TableCell>{team.distance}</TableCell>
+                                        
+                                        {/* Location Cell */}
+                                        <TableCell>
+                                            {location !== 'Not assigned' ? (
+                                                <Tooltip title={`Playing at ${location}`}>
+                                                    <Chip 
+                                                        size="small" 
+                                                        icon={<LocationOnIcon />} 
+                                                        label={location} 
+                                                        color="primary" 
+                                                        variant="outlined"
+                                                    />
+                                                </Tooltip>
+                                            ) : (
+                                                'Not assigned'
+                                            )}
+                                        </TableCell>
                                         
                                         {/* Status Indicators */}
                                         <TableCell align="center">

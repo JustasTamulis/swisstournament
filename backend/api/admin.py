@@ -33,16 +33,16 @@ class RoundAdmin(admin.ModelAdmin):
 
 # Custom admin for Game
 class GameAdmin(admin.ModelAdmin):
-    list_display = ('id', 'team1', 'team2', 'round', 'win', 'finished', 'created')
-    list_filter = ('finished', 'round', 'win')
-    search_fields = ('team1__name', 'team2__name')
+    list_display = ('id', 'team1', 'team2', 'round', 'win', 'location', 'finished', 'created')
+    list_filter = ('finished', 'round', 'win', 'location')
+    search_fields = ('team1__name', 'team2__name', 'location')
     ordering = ('-round__number', 'team1__name')
     fieldsets = (
         ('Teams', {
             'fields': ('team1', 'team2')
         }),
         ('Game Info', {
-            'fields': ('round', 'win', 'finished')
+            'fields': ('round', 'win', 'location', 'finished')
         }),
     )
 

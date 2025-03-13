@@ -134,4 +134,26 @@ export const getTournamentSettings = async () => {
     }
 };
 
+export const getTournamentResults = async () => {
+    try {
+        const response = await tournamentApi.get('get-tournament-results/');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching tournament results:", error);
+        throw error;
+    }
+};
+
+export const setSecondPlaceWinner = async (teamId) => {
+    try {
+        const response = await tournamentApi.post('set-second-place-winner/', {
+            team_id: teamId
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error setting second place winner:", error);
+        throw error;
+    }
+};
+
 export default tournamentApi;

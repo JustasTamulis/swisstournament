@@ -123,7 +123,7 @@ populate_db: ## Load initial data from fixtures
 	cd backend && python manage.py loaddata api/fixtures/initial_data.json
 	@echo "Initial data loaded successfully"
 
-init_db: reset_db create_db populate_db ## Reset, create and populate database with initial data
+init_db: reset_db create_db generate_fixtures populate_db ## Reset, create and populate database with initial data
 
 backup_db: ## Create a database backup
 	@mkdir -p $(BACKUP_DIR)

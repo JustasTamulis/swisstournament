@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.conf import settings
 import logging
 
 from .models import Team, Round, Game, Bet, Odds, Bonus
@@ -23,6 +24,9 @@ from .tournament import (
     process_winners,
     move_to_bonus_stage,
     move_to_finished_stage,
+    move_to_final_stage,
+    calculate_betting_results,
+    increment_finish_distance,
     all_bonuses_used,
     move_to_new_round,
 )
@@ -378,23 +382,79 @@ def mark_game(request):
         
         # Check if all games in this round are finished
         if all_games_finished(round_id):
-            # Process all winners
+            # Process all winners (increase their distance)
             winners = process_winners(round_id)
             
-            # Check if there's a tournament winner
-            winner = check_tournament_winner()
-            if winner:
-                # Move to finished stage
-                logger.info("Tournament winner determined: %s. Moving to finished stage", winner.name)
-                final_round = move_to_finished_stage(round_id, winner)
+            # Special handling for final rounds
+            if round_obj.stage == "final":
+                # This was a tiebreaker round, move to finished state
+                # We know we have a clear winner now
+                first_place = Team.objects.all().order_by('-distance').first()
+                second_place = Team.objects.all().exclude(id=first_place.id).order_by('-distance').first()
+                
+                final_round = move_to_finished_stage(round_id, first_place, second_place)
                 return Response({
-                    'message': 'Game recorded. We have a tournament winner!',
-                    'winner': TeamSerializer(winner).data,
+                    'message': 'Final game recorded. Tournament is finished!',
+                    'first_place': TeamSerializer(first_place).data,
+                    'second_place': TeamSerializer(second_place).data,
                     'round': RoundSerializer(final_round).data
                 })
+            
+            # Check if there's a tournament winner or ties
+            first_place_ties, second_place_ties, at_finish = check_tournament_winner()
+            
+            if at_finish:
+                if first_place_ties.count() == 1:
+                    # We have a clear first place winner
+                    first_place = first_place_ties.first()
+                    
+                    if second_place_ties.count() == 1:
+                        # We have clear first and second place winners
+                        second_place = second_place_ties.first()
+                        final_round = move_to_finished_stage(round_id, first_place, second_place)
+                        return Response({
+                            'message': 'We have clear tournament winners!',
+                            'first_place': TeamSerializer(first_place).data,
+                            'second_place': TeamSerializer(second_place).data,
+                            'round': RoundSerializer(final_round).data
+                        })
+                    elif second_place_ties.count() == 2:
+                        # We have a clear first place but need tiebreaker for second place
+                        final_round = move_to_final_stage(round_id, None, second_place_ties)
+                        return Response({
+                            'message': 'Clear first place winner, but we need a tiebreaker for second place!',
+                            'first_place': TeamSerializer(first_place).data,
+                            'second_place_ties': TeamSerializer(second_place_ties, many=True).data,
+                            'round': RoundSerializer(final_round).data
+                        })
+                    else:
+                        # We have a clear first place but more than 2 ties for second place
+                        # This requires manual selection in dashboard
+                        final_round = move_to_finished_stage(round_id, first_place, None)
+                        return Response({
+                            'message': 'Clear first place winner, but multiple ties for second place. Manual selection required.',
+                            'first_place': TeamSerializer(first_place).data,
+                            'second_place_ties': TeamSerializer(second_place_ties, many=True).data,
+                            'round': RoundSerializer(final_round).data
+                        })
+                elif first_place_ties.count() == 2:
+                    # We have exactly 2 teams tied for first place - setup a tiebreaker
+                    final_round = move_to_final_stage(round_id, first_place_ties)
+                    return Response({
+                        'message': 'Two teams tied for first place! Tiebreaker needed.',
+                        'ties': TeamSerializer(first_place_ties, many=True).data,
+                        'round': RoundSerializer(final_round).data
+                    })
+                else:
+                    # We have more than 2 teams tied for first place - increase finish distance
+                    new_round = increment_finish_distance()
+                    return Response({
+                        'message': 'Multiple teams tied for first place! Continuing tournament with increased finish distance.',
+                        'ties': TeamSerializer(first_place_ties, many=True).data,
+                        'round': RoundSerializer(new_round).data
+                    })
             else:
-                # Move to bonus stage
-                logger.info("All games finished for round %s. Moving to bonus stage", round_obj.number)
+                # No winner yet, proceed to bonus stage normally
                 bonus_round = move_to_bonus_stage(round_id, winners)
                 return Response({
                     'message': 'All games finished. Moving to bonus stage.',
@@ -451,7 +511,7 @@ def use_bonus(request):
                 team.save()
             case "plus_distance":
                 # Do not add distance if the target team is 1 away from finishing
-                if target_team.distance >= 11:
+                if target_team.distance >= settings.TOURNAMENT_FINISH_DISTANCE - 2:
                     logger.warning("Cannot add distance to team %s at distance %s. Request data: %s", 
                                  target_team.name, target_team.distance, request.data)
                     return Response({'error': 'Players must finish on their own'}, 
@@ -640,8 +700,93 @@ def team_stage_statuses(request):
 @permission_classes([permissions.AllowAny])
 def get_tournament_settings(request):
     """Return tournament settings like finish distance"""
-    from django.conf import settings
     
     return Response({
         'finish_distance': settings.TOURNAMENT_FINISH_DISTANCE
     })
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_tournament_results(request):
+    """Return the tournament results including first and second place winners"""
+    try:
+        # Check if we're in finished stage
+        try:
+            active_round = Round.objects.get(active=True)
+            if active_round.stage != 'finished':
+                return Response({
+                    'active': False,
+                    'message': 'Tournament is not finished yet'
+                })
+        except Round.DoesNotExist:
+            return Response({'error': 'No active round found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Calculate betting results
+        results = calculate_betting_results()
+        
+        if not results:
+            return Response({'error': 'Could not calculate tournament results'}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Format response
+        formatted_results = {
+            'active': True,
+            'first_place': TeamSerializer(results['first_place']).data,
+            'second_place': TeamSerializer(results['second_place']).data,
+            'betting_results': []
+        }
+        
+        # Format betting results
+        for result in results['betting_results']:
+            formatted_results['betting_results'].append({
+                'team': TeamSerializer(result['team']).data,
+                'first_place_points': result['first_place_points'],
+                'second_place_points': result['second_place_points'],
+                'total_points': result['total_points']
+            })
+        
+        return Response(formatted_results)
+        
+    except Exception as e:
+        logger.exception(f"Error in get_tournament_results: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def set_second_place_winner(request):
+    """API endpoint for manually setting second place winner from dashboard"""
+    try:
+        team_id = request.data.get('team_id')
+        
+        if not team_id:
+            return Response({'error': 'Team ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the team
+        second_place = get_object_or_404(Team, id=team_id)
+        
+        # Get first place (team with highest distance)
+        first_place = Team.objects.all().order_by('-distance').first()
+        
+        # Make sure we're not setting the first place team as second place
+        if second_place.id == first_place.id:
+            return Response({'error': 'Second place cannot be the same as first place'},
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the active round (should be in 'finished' stage)
+        try:
+            active_round = Round.objects.get(active=True, stage='finished')
+        except Round.DoesNotExist:
+            return Response({'error': 'Tournament is not in finished stage'},
+                          status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info(f"Manually set {second_place.name} as second place winner")
+        
+        return Response({
+            'message': f'{second_place.name} has been set as second place',
+            'first_place': TeamSerializer(first_place).data,
+            'second_place': TeamSerializer(second_place).data
+        })
+        
+    except Exception as e:
+        logger.exception(f"Error setting second place winner: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

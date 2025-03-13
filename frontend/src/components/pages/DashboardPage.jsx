@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
-    TableHead, TableRow, Button, CircularProgress, Alert, Link
+    TableHead, TableRow, Button, CircularProgress, Alert, Link,
+    Divider, Card, CardContent, CardActions, Grid, Dialog, DialogActions,
+    DialogContent, DialogContentText, DialogTitle
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { getAllTeams, getRoundInfo } from '../../services/tournamentService';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { 
+    getAllTeams, getRoundInfo, getTournamentResults, setSecondPlaceWinner 
+} from '../../services/tournamentService';
 
 // Heroku app URL as a constant for easy updating
 const HEROKU_URL = 'https://bday2025-daa089d5c915.herokuapp.com';
@@ -16,6 +21,11 @@ const DashboardPage = () => {
     const [error, setError] = useState('');
     const [roundInfo, setRoundInfo] = useState(null);
     const [stageStatuses, setStageStatuses] = useState({});
+    const [tournamentResults, setTournamentResults] = useState(null);
+    const [secondPlaceTies, setSecondPlaceTies] = useState([]);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [selectedTeamId, setSelectedTeamId] = useState(null);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,6 +42,27 @@ const DashboardPage = () => {
                 // Fetch stage statuses for all teams
                 const statuses = await fetchTeamStageStatuses(teamsData, roundData?.round_id);
                 setStageStatuses(statuses);
+                
+                // If in finished stage, get tournament results
+                if (roundData.stage === 'finished') {
+                    const results = await getTournamentResults();
+                    setTournamentResults(results);
+                    
+                    // If there's no second place winner yet, find potential second place teams
+                    if (results && results.active && !results.second_place) {
+                        // Find teams tied for second place (all teams not in first place with highest distance)
+                        const firstPlaceId = results.first_place.id;
+                        const nonWinnerTeams = teamsData.filter(team => team.id !== firstPlaceId);
+                        
+                        if (nonWinnerTeams.length > 0) {
+                            // Find max distance among non-winners
+                            const maxDistance = Math.max(...nonWinnerTeams.map(team => team.distance));
+                            // Filter teams with that distance
+                            const tiedTeams = nonWinnerTeams.filter(team => team.distance === maxDistance);
+                            setSecondPlaceTies(tiedTeams);
+                        }
+                    }
+                }
             } catch (err) {
                 console.error("Failed to fetch data:", err);
                 setError('Failed to load dashboard data. Please try again.');
@@ -63,18 +94,6 @@ const DashboardPage = () => {
                 return acc;
             }, {});
         }
-    };
-    
-    // Mock status data - the backend would provide real status
-    // This simulates the data for demonstration purposes
-    const getMockStatusForTeam = (teamId) => {
-        // Generate predictable but seemingly random status for demo
-        const seed = teamId % 4; // 0, 1, 2, or 3
-        return {
-            bet_finished: [true, false, true, false][seed],
-            joust_finished: [true, true, false, false][seed],
-            bonus_used: [false, true, true, false][seed]
-        };
     };
 
     // Helper function to copy link to clipboard
@@ -115,7 +134,46 @@ const DashboardPage = () => {
         );
     };
 
-    if (loading) {
+    // Handle selecting a team for second place
+    const handleSelectSecondPlace = (teamId) => {
+        setSelectedTeamId(teamId);
+        setConfirmDialogOpen(true);
+    };
+
+    // Close the confirmation dialog
+    const handleCloseDialog = () => {
+        setConfirmDialogOpen(false);
+        setSelectedTeamId(null);
+    };
+
+    // Confirm selecting a team as second place
+    const handleConfirmSecondPlace = async () => {
+        if (!selectedTeamId) return;
+        
+        try {
+            setLoading(true);
+            const result = await setSecondPlaceWinner(selectedTeamId);
+            
+            const selectedTeam = secondPlaceTies.find(team => team.id === selectedTeamId);
+            setSuccessMessage(`${selectedTeam.name} has been set as second place!`);
+            
+            // Update tournament results
+            const updatedResults = await getTournamentResults();
+            setTournamentResults(updatedResults);
+            
+            // Clear second place ties
+            setSecondPlaceTies([]);
+            
+        } catch (err) {
+            setError('Failed to set second place winner. Please try again.');
+            console.error("Error setting second place:", err);
+        } finally {
+            setLoading(false);
+            setConfirmDialogOpen(false);
+        }
+    };
+
+    if (loading && teams.length === 0) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -133,6 +191,7 @@ const DashboardPage = () => {
             </Box>
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
             
             {roundInfo && (
                 <Alert severity="info" sx={{ mb: 2 }}>
@@ -140,6 +199,103 @@ const DashboardPage = () => {
                 </Alert>
             )}
             
+            {/* Second place selection section */}
+            {roundInfo?.stage === 'finished' && secondPlaceTies.length > 0 && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <EmojiEventsIcon color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="h6">
+                            Select Second Place Winner
+                        </Typography>
+                    </Box>
+                    
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                        There are {secondPlaceTies.length} teams tied for second place. Please select one:
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                        {secondPlaceTies.map(team => (
+                            <Grid item xs={12} sm={6} md={4} key={team.id}>
+                                <Card variant="outlined">
+                                    <CardContent>
+                                        <Typography variant="h6" gutterBottom>{team.name}</Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Distance: {team.distance}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                            {team.description}
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button 
+                                            size="small" 
+                                            color="primary"
+                                            variant="contained"
+                                            onClick={() => handleSelectSecondPlace(team.id)}
+                                        >
+                                            Select as Second Place
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Paper>
+            )}
+            
+            {/* Tournament results section */}
+            {tournamentResults && tournamentResults.active && (
+                <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+                    <Typography variant="h6" gutterBottom>Tournament Results</Typography>
+                    
+                    <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight="bold">First Place:</Typography>
+                            <Typography>{tournamentResults.first_place.name}</Typography>
+                        </Box>
+                        
+                        <Box>
+                            <Typography variant="subtitle1" fontWeight="bold">Second Place:</Typography>
+                            <Typography>
+                                {tournamentResults.second_place ? 
+                                    tournamentResults.second_place.name : 
+                                    "Not determined yet"}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Typography variant="h6" gutterBottom>Betting Results</Typography>
+                    
+                    <TableContainer>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Rank</TableCell>
+                                    <TableCell>Team</TableCell>
+                                    <TableCell align="center">First Place Points</TableCell>
+                                    <TableCell align="center">Second Place Points</TableCell>
+                                    <TableCell align="center">Total Points</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {tournamentResults.betting_results.map((result, index) => (
+                                    <TableRow key={result.team.id}>
+                                        <TableCell>{index + 1}</TableCell>
+                                        <TableCell>{result.team.name}</TableCell>
+                                        <TableCell align="center">{result.first_place_points.toFixed(2)}</TableCell>
+                                        <TableCell align="center">{result.second_place_points.toFixed(2)}</TableCell>
+                                        <TableCell align="center">{result.total_points.toFixed(2)}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
+            )}
+            
+            {/* Teams table */}
             <Paper elevation={3}>
                 <TableContainer>
                     <Table>
@@ -230,8 +386,38 @@ const DashboardPage = () => {
                     </Table>
                 </TableContainer>
             </Paper>
+            
+            {/* Confirmation Dialog */}
+            <Dialog
+                open={confirmDialogOpen}
+                onClose={handleCloseDialog}
+            >
+                <DialogTitle>Confirm Second Place Selection</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to choose this team as the second place winner? This action cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button onClick={handleConfirmSecondPlace} variant="contained" color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
+
+// Helper function to generate mock status data when API data isn't available
+function getMockStatusForTeam(teamId) {
+    // Generate predictable but seemingly random status for demo
+    const seed = teamId % 4; // 0, 1, 2, or 3
+    return {
+        bet_finished: [true, false, true, false][seed],
+        joust_finished: [true, true, false, false][seed],
+        bonus_used: [false, true, true, false][seed]
+    };
+}
 
 export default DashboardPage;

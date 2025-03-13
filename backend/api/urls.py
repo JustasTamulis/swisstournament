@@ -22,4 +22,6 @@ urlpatterns = [
     path('get-betting-table/', views.get_betting_table, name='get-betting-table'),
     path('team-stage-statuses/', views.team_stage_statuses, name='team-stage-statuses'),
     path('get-tournament-settings/', views.get_tournament_settings, name='get-tournament-settings'),
+    path('get-tournament-results/', views.get_tournament_results, name='get-tournament-results'),
+    path('set-second-place-winner/', views.set_second_place_winner, name='set-second-place-winner'),
 ]

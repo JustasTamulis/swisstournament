@@ -50,8 +50,8 @@ const JoustPage = () => {
                 setLoading(true);
                 setError('');
                 
-                // Only continue if we're in joust stage
-                if (roundStage === 'joust') {
+                // Only continue if we're in joust or final stage
+                if (roundStage === 'joust' || roundStage === 'final') {
                     // Get player team info
                     const playerTeamData = await getTeamByIdentifier(playerId);
                     setPlayerTeam(playerTeamData);

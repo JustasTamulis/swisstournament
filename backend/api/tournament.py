@@ -258,18 +258,79 @@ def move_to_new_round(round_id):
     
     return new_round
 
-# Finished stage
+# Final and Finished stages
 
 def check_tournament_winner():
-    """Check if there's a winner (distance > setting value)"""
+    """Check if there's a winner or tie at the finish line"""
     finish_distance = settings.TOURNAMENT_FINISH_DISTANCE
-    winner = Team.objects.filter(distance__gt=finish_distance).first()
-    if winner:
-        return winner
-    return None
+    
+    # Find all teams at or beyond finish distance
+    potential_winners = Team.objects.filter(distance__gte=finish_distance).order_by('-distance')
+    
+    if not potential_winners.exists():
+        return None, None, None
+    
+    # Get the highest distance achieved
+    max_distance = potential_winners.first().distance
+    
+    # Get all teams at the highest distance (could be ties)
+    teams_at_max = Team.objects.filter(distance=max_distance).order_by('id')
+    
+    # Get second highest distance teams (for second place consideration)
+    if teams_at_max.count() == 1:
+        # If we have a clear winner, look for second place
+        second_highest = Team.objects.filter(distance__lt=max_distance).order_by('-distance')
+        if second_highest.exists():
+            second_max_distance = second_highest.first().distance
+            teams_at_second_max = Team.objects.filter(distance=second_max_distance).order_by('id')
+        else:
+            teams_at_second_max = []
+    else:
+        # If we have ties for first, there's no second place yet
+        teams_at_second_max = []
+    
+    # Return the tie situation
+    return teams_at_max, teams_at_second_max, max_distance >= finish_distance
 
-def move_to_finished_stage(round_id, winner):
-    """Create a final round marking the tournament as finished"""
+def move_to_final_stage(round_id, first_place_ties=None, second_place_ties=None):
+    """Create a final round for resolving ties"""
+    current_round = Round.objects.get(id=round_id)
+    
+    # Create new round with final stage
+    new_round = Round.objects.create(
+        number=current_round.number,
+        active=True,
+        stage="final"
+    )
+    
+    # Set current round as inactive
+    current_round.active = False
+    current_round.save()
+    
+    # Create games for first place ties if needed
+    if first_place_ties and len(first_place_ties) == 2:
+        Game.objects.create(
+            team1=first_place_ties[0],
+            team2=first_place_ties[1],
+            round=new_round,
+            finished=False
+        )
+        logger.info(f"Created final game for first place between {first_place_ties[0].name} and {first_place_ties[1].name}")
+    
+    # Create games for second place ties if needed
+    if second_place_ties and len(second_place_ties) == 2:
+        Game.objects.create(
+            team1=second_place_ties[0],
+            team2=second_place_ties[1],
+            round=new_round,
+            finished=False
+        )
+        logger.info(f"Created final game for second place between {second_place_ties[0].name} and {second_place_ties[1].name}")
+    
+    return new_round
+
+def move_to_finished_stage(round_id, first_place=None, second_place=None):
+    """Create a final round marking the tournament as finished with winners"""
     current_round = Round.objects.get(id=round_id)
     
     # Create new round with finished stage
@@ -283,4 +344,86 @@ def move_to_finished_stage(round_id, winner):
     current_round.active = False
     current_round.save()
     
+    # Store winners in round description or properties
+    if first_place:
+        logger.info(f"Tournament finished with {first_place.name} in first place!")
+    if second_place:
+        logger.info(f"Tournament finished with {second_place.name} in second place!")
+    
     return new_round
+
+def calculate_betting_results():
+    """Calculate betting results based on first and second place winners"""
+    # Find the active round with 'finished' stage
+    try:
+        finished_round = Round.objects.get(active=True, stage='finished')
+    except Round.DoesNotExist:
+        logger.error("No active finished round found for calculating betting results")
+        return None
+    
+    # Get first place (team with highest distance)
+    first_place = Team.objects.all().order_by('-distance').first()
+    
+    # Get second place (team with second highest distance)
+    second_place = Team.objects.all().exclude(id=first_place.id).order_by('-distance').first()
+    
+    if not first_place or not second_place:
+        logger.error("Couldn't determine first or second place for betting results")
+        return None
+    
+    # Calculate betting points for each team
+    teams = Team.objects.all()
+    results = []
+    
+    for team in teams:
+        # Get all bets by this team on the winners
+        first_place_bets = Bet.objects.filter(team=team, bet_on_team=first_place)
+        second_place_bets = Bet.objects.filter(team=team, bet_on_team=second_place)
+        
+        # Sum up betting points
+        first_place_points = sum([bet.odds.odd1 for bet in first_place_bets]) if first_place_bets else 0
+        second_place_points = sum([bet.odds.odd2 for bet in second_place_bets]) if second_place_bets else 0
+        total_points = first_place_points + second_place_points
+        
+        results.append({
+            'team': team,
+            'first_place_points': first_place_points,
+            'second_place_points': second_place_points,
+            'total_points': total_points
+        })
+    
+    # Sort by total points (descending)
+    results.sort(key=lambda x: x['total_points'], reverse=True)
+    
+    return {
+        'first_place': first_place,
+        'second_place': second_place,
+        'betting_results': results
+    }
+
+def increment_finish_distance():
+    """Increment the finish distance when there are multiple ties"""
+    # This would require updating the setting, which is not possible directly
+    # Instead, we'll use a Round property to track the effective finish_distance
+    try:
+        active_round = Round.objects.get(active=True)
+        
+        # Create a new round with incremented finish distance
+        new_round = Round.objects.create(
+            number=active_round.number + 1,
+            active=True,
+            stage="betting"  # Reset to betting stage for the next round
+        )
+        
+        active_round.active = False
+        active_round.save()
+        
+        # Generate odds for the new round
+        generate_new_odds(new_round.id)
+        
+        logger.info(f"Finish distance effectively increased, continuing tournament with round {new_round.number}")
+        
+        return new_round
+    except Exception as e:
+        logger.exception(f"Error incrementing finish distance: {e}")
+        return None

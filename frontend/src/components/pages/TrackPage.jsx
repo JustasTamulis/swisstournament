@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Paper, CircularProgress, Alert } from '@mui/material';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'; // Add trophy icon
+import LooksOneIcon from '@mui/icons-material/LooksOne';  // First place icon
+import LooksTwoIcon from '@mui/icons-material/LooksTwo';  // Second place icon
 import { useSearchParams } from 'react-router-dom';
-import { getAllTeams, getTeamByIdentifier } from '../../services/tournamentService';
+import { getAllTeams, getTeamByIdentifier, getTournamentResults } from '../../services/tournamentService';
 import { useTournament } from '../../context/TournamentContext';
 
 // Enhanced wooden horse SVG component with more detail
@@ -75,6 +78,7 @@ const TrackPage = () => {
     const animationTimeout = useRef(null);
     const stepAnimationRef = useRef(null);
     const lastViewedStatesRef = useRef({});
+    const [winners, setWinners] = useState({ first: null, second: null });
     
     // Get tournament context
     const { roundInfo, roundChanged, finishDistance } = useTournament();
@@ -84,6 +88,9 @@ const TrackPage = () => {
 
     // Track if we've done the initial load
     const initialLoadDone = useRef(false);
+
+    // Extract round stage for conditional rendering
+    const roundStage = roundInfo?.stage;
 
     useEffect(() => {
         // Add swinging animation styles dynamically
@@ -228,6 +235,27 @@ const TrackPage = () => {
         };
     }, [playerId, roundChanged]);
 
+    useEffect(() => {
+        // Check if we're in finished stage and fetch winners
+        if (roundStage === 'finished') {
+            const fetchWinners = async () => {
+                try {
+                    const results = await getTournamentResults();
+                    if (results && results.active) {
+                        setWinners({
+                            first: results.first_place.id,
+                            second: results.second_place?.id
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error fetching tournament results:", err);
+                }
+            };
+            
+            fetchWinners();
+        }
+    }, [roundStage]);
+
     // Generate team colors based on team id for consistency
     const getTeamColor = (teamId) => {
         // More natural wooden colors
@@ -250,6 +278,25 @@ const TrackPage = () => {
                 <Typography sx={{marginLeft: '15px', fontWeight: 'bold'}} variant='h6'>
                     Carnival Horse Race
                 </Typography>
+                
+                {/* Show tournament status indicator */}
+                {roundStage === 'finished' && (
+                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.main', px: 2, py: 0.5, borderRadius: 1 }}>
+                        <EmojiEventsIcon sx={{ color: 'white' }} />
+                        <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
+                            Tournament Completed!
+                        </Typography>
+                    </Box>
+                )}
+                
+                {roundStage === 'final' && (
+                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'secondary.main', px: 2, py: 0.5, borderRadius: 1 }}>
+                        <EmojiEventsIcon sx={{ color: 'white' }} />
+                        <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
+                            Final Tiebreaker!
+                        </Typography>
+                    </Box>
+                )}
             </Box>
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -367,7 +414,7 @@ const TrackPage = () => {
                         boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.1)',
                         zIndex: 2,
                     }}>
-                        {/* Lane label */}
+                        {/* Lane label with winner indicators */}
                         <Typography 
                             variant="subtitle1" 
                             sx={{ 
@@ -381,10 +428,35 @@ const TrackPage = () => {
                                 fontSize: '0.9rem',
                                 background: 'rgba(0,0,0,0.2)',
                                 padding: '0 5px',
-                                borderRadius: '3px'
+                                borderRadius: '3px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
                             }}
                         >
                             {team.name} {playerTeam?.id === team.id && '(You)'}
+                            
+                            {/* First place trophy */}
+                            {winners.first === team.id && (
+                                <LooksOneIcon 
+                                    sx={{ 
+                                        color: 'gold',
+                                        filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))',
+                                        fontSize: '1.2rem'
+                                    }} 
+                                />
+                            )}
+                            
+                            {/* Second place trophy */}
+                            {winners.second === team.id && (
+                                <LooksTwoIcon 
+                                    sx={{ 
+                                        color: 'silver',
+                                        filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))',
+                                        fontSize: '1.2rem'
+                                    }} 
+                                />
+                            )}
                         </Typography>
                         
                         {/* Slot for horse movement */}
@@ -457,7 +529,11 @@ const TrackPage = () => {
                     padding: '5px',
                     borderRadius: '5px'
                 }}>
-                    First team to reach {finishDistance} points wins the tournament!
+                    {roundStage === 'finished' ? (
+                        'Tournament completed! Congratulations to the winners!'
+                    ) : (
+                        `First team to reach ${finishDistance} points wins the tournament!`
+                    )}
                 </Typography>
             </Paper>
         </Box>

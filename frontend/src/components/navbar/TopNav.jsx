@@ -74,6 +74,12 @@ const TopNav = ({ content }) => {
     const getCurrentTabIndex = () => {
         // Extract the path from location.pathname (remove leading slash and get first part)
         const path = location.pathname.split('/').filter(Boolean)[0] || 'track';
+        
+        // Special case: in final stage, highlight the joust tab
+        if (roundStage === 'final' && path === 'joust') {
+            return navItems.findIndex(item => item.name === 'joust');
+        }
+        
         return Math.max(0, navItems.findIndex(item => item.name === path));
     };
 

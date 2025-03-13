@@ -4,6 +4,7 @@ import {
     Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from '@mui/material';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useSearchParams } from 'react-router-dom';
 import { 
     getTeamByIdentifier, getNextOpponent,
@@ -71,7 +72,7 @@ const JoustPage = () => {
                         }
                     }
                 } else {
-                    // Not in joust stage - clear opponent data
+                    // Not in joust or final stage - clear opponent data
                     setOpponent(null);
                     setOpponentId(null);
                     setOpponentDescription('');
@@ -146,18 +147,21 @@ const JoustPage = () => {
     return (
         <Box sx={{ padding: 2 }}>
             <Box className="TopBar" sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <SportsKabaddiIcon />
+                {roundStage === 'final' ? <EmojiEventsIcon /> : <SportsKabaddiIcon />}
                 <Typography sx={{marginLeft: '15px', fontWeight: 'bold'}} variant='h6'>
-                    Your Next Match
+                    {roundStage === 'final' ? 'Final Tiebreaker Match' : 'Your Next Match'}
                 </Typography>
             </Box>
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             
-            {roundInfo?.stage !== 'joust' ? (
+            {roundStage !== 'joust' && roundStage !== 'final' ? (
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
                     <Typography variant="h6" gutterBottom>
-                        Joust stage is not active
+                        {roundStage === 'finished' ? 
+                            'Tournament has ended' : 
+                            'Match stage is not active'
+                        }
                     </Typography>
                     <Typography variant="body1">
                         The current stage is: {roundInfo?.stage || 'unknown'}
@@ -165,8 +169,14 @@ const JoustPage = () => {
                 </Paper>
             ) : opponent ? (
                 <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
+                    {roundStage === 'final' && (
+                        <Alert severity="warning" sx={{ mb: 3 }}>
+                            This is a tiebreaker match! The winner will determine final tournament placement.
+                        </Alert>
+                    )}
+                    
                     <Typography variant="h5" gutterBottom>
-                        Your next opponent is:
+                        Your {roundStage === 'final' ? 'tiebreaker' : 'next'} opponent is:
                     </Typography>
                     <Typography variant="h4" color="primary" gutterBottom>
                         {opponent}
@@ -181,7 +191,7 @@ const JoustPage = () => {
                     {gameFinished ? (
                         <Box sx={{ mt: 3 }}>
                             <Alert severity="info">
-                                This game has already been completed. Please wait for the next round.
+                                This game has already been completed. Please wait for the results.
                             </Alert>
                         </Box>
                     ) : (
@@ -221,10 +231,13 @@ const JoustPage = () => {
                 open={dialogOpen}
                 onClose={handleDialogClose}
             >
-                <DialogTitle>Confirm Result</DialogTitle>
+                <DialogTitle>
+                    {roundStage === 'final' ? 'Confirm Tiebreaker Result' : 'Confirm Result'}
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         Are you sure you want to record this result? This action cannot be undone.
+                        {roundStage === 'final' && ' This is a final tiebreaker match that will determine tournament placement.'}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

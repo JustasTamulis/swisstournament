@@ -76,7 +76,7 @@ mig: ## Apply database migrations
 	cd backend && python manage.py migrate
 
 admin: ## Create a superuser
-	python backend/manage.py createsuperuser
+	DJANGO_SUPERUSER_PASSWORD=l DJANGO_SUPERUSER_USERNAME=l DJANGO_SUPERUSER_EMAIL="" python backend/manage.py createsuperuser --noinput
 
 data_to_heroku: ## Load data to Heroku
 	python backend/manage.py dumpdata api --indent 2 > heroku_db_data.json
@@ -143,3 +143,5 @@ restore_db: ## Restore database from a backup file
 	else \
 		echo "Error: Backup file not found"; \
 	fi
+
+.PHONY: help clean venv install deploy front buildfront collectstatic back debug_back run mmig mig admin data_to_heroku view_session clean_sessions debug_session reset_db create_db generate_fixtures populate_db init_db backup_db list_backups restore_db

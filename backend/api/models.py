@@ -28,6 +28,7 @@ class Game(models.Model):
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2_games')
     win = models.BooleanField(null=True, blank=True)  # True if team1 wins, False if team2 wins
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='games')
+    location = models.CharField(max_length=100, blank=True, null=True)  # New location field
     finished = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

@@ -221,7 +221,8 @@ def get_next_opponent(request):
             'opponent_id': opponent.id,
             'opponent_description': opponent.description,
             'game_finished': game.finished,
-            'game_id': game.id
+            'game_id': game.id,
+            'location': game.location  # Include location in the response
         })
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -374,6 +375,12 @@ def mark_game(request):
             return Response({'error': 'Winner must be one of the teams in the game'}, 
                            status=status.HTTP_400_BAD_REQUEST)
         
+        # Ensure the game is not already finished
+        if game.finished:
+            logger.warning("Game %s is already finished. Request data: %s", game.id, request.data)
+            return Response({'error': 'Game is already finished'}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+
         # Set the winner
         game.win = (winner_team.id == game.team1.id)  # True if team1 wins, False if team2 wins
         game.finished = True
@@ -392,7 +399,6 @@ def mark_game(request):
                 # We know we have a clear winner now
                 first_place = Team.objects.all().order_by('-distance').first()
                 second_place = Team.objects.all().exclude(id=first_place.id).order_by('-distance').first()
-                
                 final_round = move_to_finished_stage(round_id, first_place, second_place)
                 return Response({
                     'message': 'Final game recorded. Tournament is finished!',
@@ -463,7 +469,7 @@ def mark_game(request):
                 })
         
         return Response({'message': 'Game result recorded successfully'})
-        
+    
     except Exception as e:
         logger.exception("Error in mark_game function: %s. Request data: %s", str(e), request.data)
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -534,7 +540,7 @@ def use_bonus(request):
                 logger.warning("Invalid bonus type: %s. Request data: %s", 
                              bonus_type, request.data)
                 return Response({'error': 'Invalid bonus type'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         # Mark bonus as used and update description
         bonus.finished = True
         bonus.description = f"Used bonus: {bonus_type}"
@@ -556,7 +562,7 @@ def use_bonus(request):
             'message': f'Bonus "{bonus_type}" selected and applied for team {team.name}',
             'bonus': BonusSerializer(bonus).data
         })
-        
+    
     except Exception as e:
         logger.exception("Error in use_bonus function: %s. Request data: %s", str(e), request.data)
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -573,29 +579,26 @@ def get_betting_table(request):
             return Response({'error': 'Team identifier and round_id are required'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
-        # 1. Get active round and verify
+        # Get active round and verify
         try:
             round_obj = Round.objects.get(id=round_id)
         except Round.DoesNotExist:
             return Response({'error': 'Round not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        # 2. Get player team info
+        # Get player team info
         try:
             player_team = Team.objects.get(identifier=identifier)
         except Team.DoesNotExist:
             return Response({'error': 'Player team not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        # 3. Get all teams with odds for this round
-        teams = Team.objects.all().order_by('-distance')
         bets_available = player_team.bets_available
-        
-        # 4. Get all bets made by this player
         player_bets = Bet.objects.filter(team=player_team.id)
         
-        # 5. Get odds for this round
+        # Get all teams with odds for this round
+        teams = Team.objects.all().order_by('-distance')
         odds_data = Odds.objects.filter(round=round_id)
         
-        # 6. Build result table with all required data
+        # Build result table with all required data
         result_table = []
         
         for team in teams:
@@ -646,7 +649,6 @@ def team_stage_statuses(request):
         
         # Get all rounds with the same number (different stages)
         all_rounds_same_number = Round.objects.filter(number=round_number)
-        
         teams = Team.objects.all()
         result = {}
         
@@ -701,7 +703,6 @@ def team_stage_statuses(request):
 @permission_classes([permissions.AllowAny])
 def get_tournament_settings(request):
     """Return tournament settings like finish distance"""
-    
     return Response({
         'finish_distance': settings.TOURNAMENT_FINISH_DISTANCE
     })
@@ -769,7 +770,7 @@ def set_second_place_winner(request):
         try:
             active_round = Round.objects.get(active=True)
         except Round.DoesNotExist:
-            return Response({'error': 'No active round found'},
+            return Response({'error': 'No active round found'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
         # Get first place (team with highest distance)
@@ -783,18 +784,15 @@ def set_second_place_winner(request):
         # Special handling for final-multiple-ties stage
         if active_round.stage == 'final-multiple-ties':
             logger.info(f"Selecting {second_place.name} as second place from multiple ties")
-            
             # Increase first place distance by 1
             first_place.distance += 1
             first_place.save()
-            
             # Increase the selected second place team's distance by 1
             second_place.distance += 1
             second_place.save()
             
             # Move to finished stage
             final_round = move_to_finished_stage(active_round.id, first_place, second_place)
-            
             return Response({
                 'message': f'{second_place.name} has been set as second place',
                 'first_place': TeamSerializer(first_place).data,
@@ -811,9 +809,9 @@ def set_second_place_winner(request):
                 'second_place': TeamSerializer(second_place).data
             })
         
-        return Response({'error': 'Current round stage does not support selecting a second place winner'},
-                      status=status.HTTP_400_BAD_REQUEST)
-        
+        return Response({'error': 'Current round stage does not support selecting a second place winner'}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+    
     except Exception as e:
         logger.exception(f"Error setting second place winner: {e}")
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

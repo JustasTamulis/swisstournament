@@ -2,12 +2,23 @@ import random
 from .models import Round, Team, Game, Odds, Bet, Bonus
 import logging
 from django.conf import settings
+from django.db import models
 
 # Get a logger for this file
 logger = logging.getLogger(__name__)
 
-# Betting stage
 
+# locations
+LOCATIONS = [
+    "Biblioteka",
+    "Stalas",
+    "Sofa",
+    "Lova",
+    "Palėpė",
+]
+
+
+# Betting stage
 def new_odds_logic(distances: list[int], finish_distance: int) -> list[tuple]:
     """
     Calculate odds for teams based on their distances from the finish line.
@@ -103,47 +114,148 @@ def all_bets_placed(round_id):
             return False
     return True
 
-
 def move_to_joust_stage(round_id):
     """Move from betting stage to joust stage"""
     current_round = Round.objects.get(id=round_id)
     
-    # Create new round with joust stage
-    new_round = Round.objects.create(
-        number=current_round.number,
-        active=True,
-        stage="joust"
-    )
     
     # Set current round as inactive
     current_round.active = False
     current_round.save()
+
+    # Generate game pairs only for the first round
+    if current_round.number == 1:
+        
+        # Create new round with joust stage
+        new_round = Round.objects.create(
+            number=current_round.number,
+            active=True,
+            stage="joust"
+        )
+
+        games = generate_new_game_pairs(new_round.id)
+        logger.info("Generated %d initial game pairs for round 1", len(games))
+    else:
+        # Get the next joust round and set it as active
+        new_round = Round.objects.get(number=current_round.number, stage="joust")
+        new_round.active = True
+        new_round.save()
     
-    # Generate game pairs for the new round
-    games = generate_new_game_pairs(new_round.id)
-    logger.info("Generated %d game pairs for round %s", len(games), new_round.number)
-    
+    logger.info("Moving to joust stage for round %s", new_round.number)
     return new_round
 
 # Joust stage
 
 def generate_new_game_pairs(round_id):
-    """Generate random game pairs for the given round"""
+    """Generate game pairs for the given round based on team locations"""
     round_obj = Round.objects.get(id=round_id)
     teams = list(Team.objects.all())
-    random.shuffle(teams)
     
-    # Pair teams randomly
+    # Determine how many locations to use based on team count
+    team_count = len(teams)
+    location_count = min(len(LOCATIONS), max(2, team_count // 2))
+    active_locations = LOCATIONS[:location_count]
+    
+    # Group teams by their current location
+    team_locations = {}
+    
+    # For first round, distribute teams evenly across locations
+    if round_obj.number == 1:
+        # Shuffle teams for random initial placement
+        random.shuffle(teams)
+        
+        # Distribute teams across locations
+        for i, team in enumerate(teams):
+            location_index = min(i % location_count, len(active_locations) - 1)
+            location = active_locations[location_index]
+            
+            if location not in team_locations:
+                team_locations[location] = []
+            team_locations[location].append(team)
+    else:
+        # For subsequent rounds, determine location based on previous game results
+        for team in teams:
+            # Find the team's most recent game
+            prev_games = Game.objects.filter(
+                models.Q(team1=team) | models.Q(team2=team),
+                round__number=round_obj.number - 1
+            ).order_by('-created')
+            
+            if prev_games.exists():
+                prev_game = prev_games.first()
+                prev_location = prev_game.location
+                
+                # Find the index of previous location
+                try:
+                    prev_location_index = active_locations.index(prev_location)
+                except ValueError:
+                    # If location not found (might happen if we change the set of locations)
+                    prev_location_index = location_count // 2  # Middle location as fallback
+                
+                # Team won if it was team1 and win is True, or team2 and win is False
+                won = (team == prev_game.team1 and prev_game.win) or (team == prev_game.team2 and not prev_game.win)
+                
+                if won:
+                    # Move up one location if won, unless already at top
+                    new_location_index = min(prev_location_index + 1, location_count - 1)
+                else:
+                    # Move down one location if lost, unless already at bottom
+                    new_location_index = max(prev_location_index - 1, 0)
+                
+                location = active_locations[new_location_index]
+            else:
+                # If no previous game found, place in middle location
+                location = active_locations[location_count // 2]
+            
+            if location not in team_locations:
+                team_locations[location] = []
+            team_locations[location].append(team)
+    
+    # Create games for each location
     games = []
-    for i in range(0, len(teams), 2):
-        if i + 1 < len(teams):
-            game = Game.objects.create(
-                team1=teams[i],
-                team2=teams[i+1],
-                round=round_obj,
-                finished=False
-            )
-            games.append(game)
+    
+    for location, location_teams in team_locations.items():
+        # Shuffle teams within each location
+        random.shuffle(location_teams)
+        
+        # Pair teams within each location
+        for i in range(0, len(location_teams), 2):
+            if i + 1 < len(location_teams):
+                game = Game.objects.create(
+                    team1=location_teams[i],
+                    team2=location_teams[i+1],
+                    round=round_obj,
+                    location=location,
+                    finished=False
+                )
+                games.append(game)
+            elif len(location_teams) % 2 == 1:
+                # Handle odd number of teams at a location
+                # Either find a team from nearby location or give a bye
+                handled = False
+                
+                # Try to find opponent from adjacent locations
+                for offset in [1, -1]:
+                    adj_idx = active_locations.index(location) + offset
+                    if 0 <= adj_idx < len(active_locations):
+                        adjacent_location = active_locations[adj_idx]
+                        if adjacent_location in team_locations and len(team_locations[adjacent_location]) % 2 == 1:
+                            # Take the last team from the adjacent location
+                            opponent = team_locations[adjacent_location].pop()
+                            game = Game.objects.create(
+                                team1=location_teams[i],
+                                team2=opponent,
+                                round=round_obj,
+                                location=location,  # Use the current team's location
+                                finished=False
+                            )
+                            games.append(game)
+                            handled = True
+                            break
+                
+                if not handled:
+                    # If no match found, this team gets a bye - no game created
+                    logger.info(f"Team {location_teams[i].name} gets a bye in round {round_obj.number}")
     
     return games
 
@@ -255,6 +367,15 @@ def move_to_new_round(round_id):
     
     # Generate odds for the new round
     generate_new_odds(new_round.id)
+    
+    # Generate game pairs for the new round
+    new_joust_round = Round.objects.create(
+        number=new_round.number,
+        active=False,
+        stage="joust"
+    )
+    games = generate_new_game_pairs(new_joust_round.id)
+    logger.info("Generated %d game pairs for round %s", len(games), new_round.number)
     
     return new_round
 

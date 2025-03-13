@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
     Box, Typography, Paper, CircularProgress, Alert, Button, 
-    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
+    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+    Chip, Divider
 } from '@mui/material';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useSearchParams } from 'react-router-dom';
 import { 
     getTeamByIdentifier, getNextOpponent,
@@ -22,6 +24,7 @@ const JoustPage = () => {
     const [playerTeam, setPlayerTeam] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [location, setLocation] = useState(''); // Add state for location
     
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -65,7 +68,8 @@ const JoustPage = () => {
                             setOpponentId(opponentData.opponent_id);
                             setOpponentDescription(opponentData.opponent_description || '');
                             setGameFinished(opponentData.game_finished || false);
-                            setGameId(opponentData.game_id); // Use the game ID from the API response
+                            setGameId(opponentData.game_id);
+                            setLocation(opponentData.location || ''); // Store the location
                         } catch (opponentError) {
                             // If there's an error getting opponent, it might mean all games are finished
                             console.log("No opponent found, might be finished:", opponentError);
@@ -78,6 +82,7 @@ const JoustPage = () => {
                     setOpponentDescription('');
                     setGameFinished(false);
                     setGameId(null);
+                    setLocation('');
                     
                     // Get player team info for display purposes
                     const playerTeamData = await getTeamByIdentifier(playerId);
@@ -182,11 +187,33 @@ const JoustPage = () => {
                         {opponent}
                     </Typography>
                     
+                    {/* Display match location */}
+                    {location && (
+                        <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            mt: 2,
+                            mb: 2 
+                        }}>
+                            <LocationOnIcon color="secondary" sx={{ mr: 1 }} />
+                            <Typography variant="h6" color="secondary">
+                                Location: {location}
+                            </Typography>
+                        </Box>
+                    )}
+                    
                     {opponentDescription && (
                         <Typography variant="body1" sx={{ mt: 2, mb: 2, fontStyle: 'italic' }}>
                             "{opponentDescription}"
                         </Typography>
                     )}
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        Your match will take place at the <strong>{location}</strong> location. Please meet your opponent there.
+                    </Alert>
                     
                     {gameFinished ? (
                         <Box sx={{ mt: 3 }}>

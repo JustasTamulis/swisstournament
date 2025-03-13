@@ -137,6 +137,17 @@ const TopNav = ({ content }) => {
                         sx={{ fontWeight: 'bold' }}
                     />
                 );
+            case 'final-multiple-ties':
+                return (
+                    <Chip 
+                        icon={<EmojiEventsIcon />} 
+                        label="Second Place Selection" 
+                        color="warning" 
+                        variant="outlined"
+                        size="small" 
+                        sx={{ fontWeight: 'bold' }}
+                    />
+                );
             case 'finished':
                 return (
                     <Chip 

@@ -26,6 +26,7 @@ const DashboardPage = () => {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [selectedTeamId, setSelectedTeamId] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
+    const [firstPlace, setFirstPlace] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -61,6 +62,24 @@ const DashboardPage = () => {
                             const tiedTeams = nonWinnerTeams.filter(team => team.distance === maxDistance);
                             setSecondPlaceTies(tiedTeams);
                         }
+                    }
+                } 
+                // Special handling for final-multiple-ties stage
+                else if (roundData.stage === 'final-multiple-ties') {
+                    // Find first place team (highest distance)
+                    const firstPlaceTeam = teamsData.sort((a, b) => b.distance - a.distance)[0];
+                    setFirstPlace(firstPlaceTeam);
+                    
+                    // Find all teams tied for second place
+                    // (teams with highest distance excluding first place)
+                    const nonWinnerTeams = teamsData.filter(team => team.id !== firstPlaceTeam.id);
+                    
+                    if (nonWinnerTeams.length > 0) {
+                        // Find max distance among non-winners
+                        const maxDistance = Math.max(...nonWinnerTeams.map(team => team.distance));
+                        // Filter teams with that distance
+                        const tiedTeams = nonWinnerTeams.filter(team => team.distance === maxDistance);
+                        setSecondPlaceTies(tiedTeams);
                     }
                 }
             } catch (err) {
@@ -157,9 +176,15 @@ const DashboardPage = () => {
             const selectedTeam = secondPlaceTies.find(team => team.id === selectedTeamId);
             setSuccessMessage(`${selectedTeam.name} has been set as second place!`);
             
-            // Update tournament results
-            const updatedResults = await getTournamentResults();
-            setTournamentResults(updatedResults);
+            // Update round info - we should now be in 'finished' stage
+            const updatedRoundInfo = await getRoundInfo();
+            setRoundInfo(updatedRoundInfo);
+            
+            // If we're now in finished stage, get tournament results
+            if (updatedRoundInfo.stage === 'finished') {
+                const updatedResults = await getTournamentResults();
+                setTournamentResults(updatedResults);
+            }
             
             // Clear second place ties
             setSecondPlaceTies([]);
@@ -199,8 +224,8 @@ const DashboardPage = () => {
                 </Alert>
             )}
             
-            {/* Second place selection section */}
-            {roundInfo?.stage === 'finished' && secondPlaceTies.length > 0 && (
+            {/* Second place selection section - now handles both finished and final-multiple-ties stages */}
+            {(roundInfo?.stage === 'finished' || roundInfo?.stage === 'final-multiple-ties') && secondPlaceTies.length > 0 && (
                 <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <EmojiEventsIcon color="primary" sx={{ mr: 1 }} />
@@ -208,6 +233,13 @@ const DashboardPage = () => {
                             Select Second Place Winner
                         </Typography>
                     </Box>
+                    
+                    {roundInfo?.stage === 'final-multiple-ties' && firstPlace && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            {firstPlace.name} has secured first place! Please select one team from 
+                            the {secondPlaceTies.length} teams tied for second place.
+                        </Alert>
+                    )}
                     
                     <Typography variant="body1" sx={{ mb: 2 }}>
                         There are {secondPlaceTies.length} teams tied for second place. Please select one:
@@ -396,6 +428,8 @@ const DashboardPage = () => {
                 <DialogContent>
                     <DialogContentText>
                         Are you sure you want to choose this team as the second place winner? This action cannot be undone.
+                        {roundInfo?.stage === 'final-multiple-ties' && 
+                         " This will increase both first and second place teams' distances by 1."}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

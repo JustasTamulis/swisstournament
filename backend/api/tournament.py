@@ -329,6 +329,27 @@ def move_to_final_stage(round_id, first_place_ties=None, second_place_ties=None)
     
     return new_round
 
+def move_to_final_multiple_ties_stage(round_id, first_place, second_place_ties):
+    """Create a special final round for resolving multiple ties for second place"""
+    current_round = Round.objects.get(id=round_id)
+    
+    # Create new round with special final-multiple-ties stage
+    new_round = Round.objects.create(
+        number=current_round.number,
+        active=True,
+        stage="final-multiple-ties"
+    )
+    
+    # Set current round as inactive
+    current_round.active = False
+    current_round.save()
+    
+    # Log the first place winner and the ties for second place
+    logger.info(f"Moving to final-multiple-ties stage with {first_place.name} as first place.")
+    logger.info(f"Second place ties: {', '.join([team.name for team in second_place_ties])}")
+    
+    return new_round
+
 def move_to_finished_stage(round_id, first_place=None, second_place=None):
     """Create a final round marking the tournament as finished with winners"""
     current_round = Round.objects.get(id=round_id)

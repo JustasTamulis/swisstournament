@@ -29,6 +29,7 @@ from .tournament import (
     increment_finish_distance,
     all_bonuses_used,
     move_to_new_round,
+    move_to_final_multiple_ties_stage
 )
 
 # Get a logger for this file
@@ -429,8 +430,8 @@ def mark_game(request):
                         })
                     else:
                         # We have a clear first place but more than 2 ties for second place
-                        # This requires manual selection in dashboard
-                        final_round = move_to_finished_stage(round_id, first_place, None)
+                        # Move to special stage for manual selection in dashboard
+                        final_round = move_to_final_multiple_ties_stage(round_id, first_place, second_place_ties)
                         return Response({
                             'message': 'Clear first place winner, but multiple ties for second place. Manual selection required.',
                             'first_place': TeamSerializer(first_place).data,
@@ -511,7 +512,7 @@ def use_bonus(request):
                 team.save()
             case "plus_distance":
                 # Do not add distance if the target team is 1 away from finishing
-                if target_team.distance >= settings.TOURNAMENT_FINISH_DISTANCE - 2:
+                if target_team.distance >= settings.TOURNAMENT_FINISH_DISTANCE - 1:
                     logger.warning("Cannot add distance to team %s at distance %s. Request data: %s", 
                                  target_team.name, target_team.distance, request.data)
                     return Response({'error': 'Players must finish on their own'}, 
@@ -764,6 +765,13 @@ def set_second_place_winner(request):
         # Get the team
         second_place = get_object_or_404(Team, id=team_id)
         
+        # Get the active round
+        try:
+            active_round = Round.objects.get(active=True)
+        except Round.DoesNotExist:
+            return Response({'error': 'No active round found'},
+                          status=status.HTTP_400_BAD_REQUEST)
+        
         # Get first place (team with highest distance)
         first_place = Team.objects.all().order_by('-distance').first()
         
@@ -772,20 +780,39 @@ def set_second_place_winner(request):
             return Response({'error': 'Second place cannot be the same as first place'},
                           status=status.HTTP_400_BAD_REQUEST)
         
-        # Get the active round (should be in 'finished' stage)
-        try:
-            active_round = Round.objects.get(active=True, stage='finished')
-        except Round.DoesNotExist:
-            return Response({'error': 'Tournament is not in finished stage'},
-                          status=status.HTTP_400_BAD_REQUEST)
+        # Special handling for final-multiple-ties stage
+        if active_round.stage == 'final-multiple-ties':
+            logger.info(f"Selecting {second_place.name} as second place from multiple ties")
+            
+            # Increase first place distance by 1
+            first_place.distance += 1
+            first_place.save()
+            
+            # Increase the selected second place team's distance by 1
+            second_place.distance += 1
+            second_place.save()
+            
+            # Move to finished stage
+            final_round = move_to_finished_stage(active_round.id, first_place, second_place)
+            
+            return Response({
+                'message': f'{second_place.name} has been set as second place',
+                'first_place': TeamSerializer(first_place).data,
+                'second_place': TeamSerializer(second_place).data,
+                'round': RoundSerializer(final_round).data
+            })
         
-        logger.info(f"Manually set {second_place.name} as second place winner")
+        # Normal handling for finished stage
+        elif active_round.stage == 'finished':
+            logger.info(f"Manually set {second_place.name} as second place winner")
+            return Response({
+                'message': f'{second_place.name} has been set as second place',
+                'first_place': TeamSerializer(first_place).data,
+                'second_place': TeamSerializer(second_place).data
+            })
         
-        return Response({
-            'message': f'{second_place.name} has been set as second place',
-            'first_place': TeamSerializer(first_place).data,
-            'second_place': TeamSerializer(second_place).data
-        })
+        return Response({'error': 'Current round stage does not support selecting a second place winner'},
+                      status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
         logger.exception(f"Error setting second place winner: {e}")

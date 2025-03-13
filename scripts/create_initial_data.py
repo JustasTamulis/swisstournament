@@ -9,12 +9,12 @@ from datetime import datetime, timezone
 teams = {
     'kaktomusa-nfjfwinf3uh3tu89hg8879gw98h3t': {'name': 'Kaktomuša', 'description': 'Vardas ir pavardas'},
     'papirusas-j38f7h384fh87fh38f7h3': {'name': 'Papirusas', 'description': 'Vardas ir pavardas'},
-    'grandinine-reakcija-7fg76sdf786sd7f6g': {'name': 'Grandininė reakcija', 'description': 'Vardas ir pavardas'},
-    'sviesos-greitis-98h3rgf87g387fg38': {'name': 'Šviesos greitis', 'description': 'Vardas ir pavardas'},
-    'kibirkstis-23j4h23j4h324j23h4': {'name': 'Kibirkštis', 'description': 'Vardas ir pavardas'},
-    'dobilas-98h3g87g387fg3iug3iug3': {'name': 'Dobilas', 'description': 'Vardas ir pavardas'},
-    'zaibas-83hf83fh83f8h38fh83fh': {'name': 'Žaibas', 'description': 'Vardas ir pavardas'},
-    'spurga-98hf983hf98h3f983hf': {'name': 'Spurga', 'description': 'Vardas ir pavardas'},
+    # 'grandinine-reakcija-7fg76sdf786sd7f6g': {'name': 'Grandininė reakcija', 'description': 'Vardas ir pavardas'},
+    # 'sviesos-greitis-98h3rgf87g387fg38': {'name': 'Šviesos greitis', 'description': 'Vardas ir pavardas'},
+    # 'kibirkstis-23j4h23j4h324j23h4': {'name': 'Kibirkštis', 'description': 'Vardas ir pavardas'},
+    # 'dobilas-98h3g87g387fg3iug3iug3': {'name': 'Dobilas', 'description': 'Vardas ir pavardas'},
+    # 'zaibas-83hf83fh83f8h38fh83fh': {'name': 'Žaibas', 'description': 'Vardas ir pavardas'},
+    # 'spurga-98hf983hf98h3f983hf': {'name': 'Spurga', 'description': 'Vardas ir pavardas'},
 }
 
 # Define odds parameters

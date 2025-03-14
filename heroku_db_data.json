@@ -8,8 +8,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -21,8 +21,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -34,8 +34,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -47,8 +47,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -60,8 +60,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -73,34 +73,8 @@
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
-  }
-},
-{
-  "model": "api.team",
-  "pk": 7,
-  "fields": {
-    "identifier": "zaibas-83hf83fh83f8h38fh83fh",
-    "name": "Žaibas",
-    "description": "Vardas ir pavardas",
-    "bets_available": 1,
-    "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
-  }
-},
-{
-  "model": "api.team",
-  "pk": 8,
-  "fields": {
-    "identifier": "spurga-98hf983hf98h3f983hf",
-    "name": "Spurga",
-    "description": "Vardas ir pavardas",
-    "bets_available": 1,
-    "distance": 0,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -110,8 +84,8 @@
     "number": 1,
     "active": true,
     "stage": "betting",
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -120,10 +94,10 @@
   "fields": {
     "round": 1,
     "team": 1,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -132,10 +106,10 @@
   "fields": {
     "round": 1,
     "team": 2,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -144,10 +118,10 @@
   "fields": {
     "round": 1,
     "team": 3,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -156,10 +130,10 @@
   "fields": {
     "round": 1,
     "team": 4,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -168,10 +142,10 @@
   "fields": {
     "round": 1,
     "team": 5,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 },
 {
@@ -180,34 +154,10 @@
   "fields": {
     "round": 1,
     "team": 6,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
-  }
-},
-{
-  "model": "api.odds",
-  "pk": 7,
-  "fields": {
-    "round": 1,
-    "team": 7,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
-  }
-},
-{
-  "model": "api.odds",
-  "pk": 8,
-  "fields": {
-    "round": 1,
-    "team": 8,
-    "odd1": 1.5,
-    "odd2": 2.5,
-    "created": "2025-03-13T19:30:38.198Z",
-    "modified": "2025-03-13T19:30:38.198Z"
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-14T14:21:08.074Z",
+    "modified": "2025-03-14T14:21:08.074Z"
   }
 }
 ]

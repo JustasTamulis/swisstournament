@@ -1,33 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     AppBar,
     Box,
     Toolbar,
-    IconButton,
     Typography,
-    Menu,
-    MenuItem,
     Container,
     Tabs,
-    Tab,
     Chip,
     useMediaQuery,
     useTheme,
-    CircularProgress,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import InfoIcon from '@mui/icons-material/Info';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournament } from '../../context/TournamentContext';
+import BetIcon from '../../assets/Bet.svg'; // Using this for all buttons for testing
 
 const TopNav = ({ content }) => {
-    // State for managing the mobile menu
-    const [anchorElNav, setAnchorElNav] = useState(null);
     const [searchParams] = useSearchParams();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -44,26 +35,17 @@ const TopNav = ({ content }) => {
     const location = useLocation();
     const navigate = useNavigate();
     
-    // Define nav items with icons and paths
+    // Define nav items with paths and labels
     const navItems = [
-        { name: 'track', icon: <DirectionsRunIcon />, label: 'Track' },
-        { name: 'bet', icon: <MonetizationOnIcon />, label: 'Betting' },
-        { name: 'joust', icon: <SportsKabaddiIcon />, label: 'Joust' },
-        { name: 'bonus', icon: <CardGiftcardIcon />, label: 'Bonus' },
-        { name: 'about', icon: <InfoIcon />, label: 'About' },
+        { name: 'track', label: 'Track' },
+        { name: 'bet', label: 'Betting' },
+        { name: 'joust', label: 'Joust' },
+        { name: 'bonus', label: 'Bonus' },
+        { name: 'about', label: 'About' },
     ];
-
-    const handleOpenNavMenu = (event) => {
-        setAnchorElNav(event.currentTarget);
-    };
-
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
-    };
 
     // Navigation with preserving URL parameters
     const handleNavigation = (path) => {
-        handleCloseNavMenu();
         const queryParams = new URLSearchParams(location.search);
         navigate(`/${path}${queryParams.toString() ? '?' + queryParams.toString() : ''}`);
     };
@@ -81,13 +63,6 @@ const TopNav = ({ content }) => {
         return Math.max(0, navItems.findIndex(item => item.name === path));
     };
 
-    // Handle tab change
-    const handleTabChange = (event, newValue) => {
-        if (newValue >= 0 && newValue < navItems.length) {
-            handleNavigation(navItems[newValue].name);
-        }
-    };
-
     // Function to get stage badge for current round
     const getStageBadge = () => {
         if (!roundInfo) return null;
@@ -97,7 +72,7 @@ const TopNav = ({ content }) => {
             case 'betting':
                 return (
                     <Chip 
-                        icon={<MonetizationOnIcon />} 
+                        icon={<MonetizationOnIcon />}
                         label="Betting Stage" 
                         color="primary" 
                         variant="outlined"
@@ -172,82 +147,55 @@ const TopNav = ({ content }) => {
         <>
             <AppBar position="static" color="default" elevation={1} sx={{ mb: 2 }}>
                 <Container maxWidth="xl">
-                    <Toolbar disableGutters sx={{ minHeight: {xs: '48px'} }}>
-                        {/* Mobile menu */}
-                        {isMobile && (
-                            <>
-                                <IconButton
-                                    size="small"
-                                    aria-controls="menu-appbar"
-                                    aria-haspopup="true"
-                                    onClick={handleOpenNavMenu}
-                                    color="inherit"
-                                >
-                                    <MenuIcon />
-                                </IconButton>
-                                <Menu
-                                    id="menu-appbar"
-                                    anchorEl={anchorElNav}
-                                    anchorOrigin={{
-                                        vertical: 'bottom',
-                                        horizontal: 'left',
-                                    }}
-                                    keepMounted
-                                    transformOrigin={{
-                                        vertical: 'top',
-                                        horizontal: 'left',
-                                    }}
-                                    open={Boolean(anchorElNav)}
-                                    onClose={handleCloseNavMenu}
-                                >
-                                    {navItems.map((item) => (
-                                        <MenuItem 
-                                            key={item.name} 
-                                            onClick={() => handleNavigation(item.name)}
-                                            selected={currentPage === item.name}
-                                        >
-                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                {item.icon}
-                                                <Typography sx={{ ml: 1 }}>{item.label}</Typography>
-                                            </Box>
-                                        </MenuItem>
-                                    ))}
-                                </Menu>
-                            </>
-                        )}
-
-                        {/* Navigation tabs - icons only */}
-                        <Tabs 
-                            value={getCurrentTabIndex()} 
-                            onChange={handleTabChange}
-                            indicatorColor="primary"
-                            textColor="primary"
+                    <Toolbar disableGutters sx={{ minHeight: {xs: '60px'} }}> {/* Increased toolbar height */}
+                        {/* Navigation buttons - using image buttons for all */}
+                        <Box 
                             sx={{ 
-                                flexGrow: 1,
-                                '& .MuiTab-root': {
-                                    minWidth: '50px',
-                                    minHeight: '48px',
-                                    padding: '6px',
-                                }
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                alignItems: 'center',
+                                width: '100%',
+                                overflow: 'hidden' // Prevent horizontal scrolling
                             }}
-                            centered
                         >
-                            {navItems.map((item, index) => {
-                                const isCurrentTab = getCurrentTabIndex() === index;
-                                return (
-                                    <Tab 
-                                        key={item.name} 
-                                        icon={item.icon} 
-                                        aria-label={item.label}
-                                        sx={{ 
-                                            border: isCurrentTab ? `1px solid ${theme.palette.primary.main}` : 'none',
-                                            borderRadius: '4px',
-                                            margin: '0 4px'
-                                        }}
-                                    />
-                                );
-                            })}
-                        </Tabs>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between', // Changed to space-between for better distribution
+                                    alignItems: 'center',
+                                    width: '100%', 
+                                    maxWidth: {xs: '100%', sm: '500px'}, // Control max width for different screen sizes
+                                }}
+                            >
+                                {navItems.map((item, index) => {
+                                    const isCurrentTab = getCurrentTabIndex() === index;
+                                    
+                                    return (
+                                        <Box 
+                                            key={item.name}
+                                            onClick={() => handleNavigation(item.name)}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                filter: isCurrentTab ? 'grayscale(100%)' : 'none',
+                                            }}
+                                        >
+                                            <img 
+                                                src={BetIcon} 
+                                                alt={item.label} 
+                                                style={{ 
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'contain',
+                                                }} 
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                        </Box>
                     </Toolbar>
                 </Container>
             </AppBar>

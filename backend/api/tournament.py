@@ -133,7 +133,7 @@ def move_to_joust_stage(round_id):
             stage="joust"
         )
 
-        games = generate_new_game_pairs(new_round.id)
+        games = generate_new_game_pairs_first_round(new_round.id)
         logger.info("Generated %d initial game pairs for round 1", len(games))
     else:
         # Get the next joust round and set it as active
@@ -146,6 +146,31 @@ def move_to_joust_stage(round_id):
 
 # Joust stage
 
+def generate_new_game_pairs_first_round(round_id):
+    """Generate game pairs for the first round with random locations"""
+    round_obj = Round.objects.get(id=round_id)
+    teams = list(Team.objects.all())
+    
+    # Determine how many locations to use based on team count
+    team_count = len(teams)
+    location_count = min(len(LOCATIONS), max(2, team_count // 2))
+    active_locations = LOCATIONS[:location_count]
+    
+    random.shuffle(teams)
+    games=[]
+    for i in range(0, len(teams), 2):
+        location = active_locations[i // 2]
+        game = Game.objects.create(
+        team1=teams[i],
+        team2=teams[i + 1],
+        round=round_obj,
+        location=location,
+        finished=False
+    )
+    games.append(game)
+
+    return games
+
 def generate_new_game_pairs(round_id):
     """Generate game pairs for the given round based on team locations"""
     round_obj = Round.objects.get(id=round_id)
@@ -156,106 +181,119 @@ def generate_new_game_pairs(round_id):
     location_count = min(len(LOCATIONS), max(2, team_count // 2))
     active_locations = LOCATIONS[:location_count]
     
-    # Group teams by their current location
+    # Check for location preferences from bonuses
+    team_preferences = {}
     team_locations = {}
+    misplaced_teams = []
     
-    # For first round, distribute teams evenly across locations
-    if round_obj.number == 1:
-        # Shuffle teams for random initial placement
-        random.shuffle(teams)
+    # Get the previous bonus round for this round number - 1
+    try:
+        prev_round_number = round_obj.number - 1
+        prev_bonus_rounds = Round.objects.filter(number=prev_round_number, stage="bonus")
         
-        # Distribute teams across locations
-        for i, team in enumerate(teams):
-            location_index = min(i % location_count, len(active_locations) - 1)
-            location = active_locations[location_index]
+        if prev_bonus_rounds.exists():
+            prev_bonus_round = prev_bonus_rounds.first()
             
-            if location not in team_locations:
-                team_locations[location] = []
-            team_locations[location].append(team)
-    else:
-        # For subsequent rounds, determine location based on previous game results
-        for team in teams:
-            # Find the team's most recent game
-            prev_games = Game.objects.filter(
-                models.Q(team1=team) | models.Q(team2=team),
-                round__number=round_obj.number - 1
-            ).order_by('-created')
+            # Get location selections from bonuses
+            location_bonuses = Bonus.objects.filter(
+                round=prev_bonus_round,
+                bonus_type='select_location',
+                finished=True
+            )
             
-            if prev_games.exists():
-                prev_game = prev_games.first()
-                prev_location = prev_game.location
-                
-                # Find the index of previous location
-                try:
-                    prev_location_index = active_locations.index(prev_location)
-                except ValueError:
-                    # If location not found (might happen if we change the set of locations)
-                    prev_location_index = location_count // 2  # Middle location as fallback
-                
-                # Team won if it was team1 and win is True, or team2 and win is False
-                won = (team == prev_game.team1 and prev_game.win) or (team == prev_game.team2 and not prev_game.win)
-                
-                if won:
-                    # Move up one location if won, unless already at top
-                    new_location_index = min(prev_location_index + 1, location_count - 1)
-                else:
-                    # Move down one location if lost, unless already at bottom
-                    new_location_index = max(prev_location_index - 1, 0)
-                
-                location = active_locations[new_location_index]
+            # Create a mapping of locations to the teams that selected them
+            location_selections = {}
+            for bonus in location_bonuses:
+                location = bonus.bonus_target
+                if location in active_locations:  # Only consider active locations
+                    if location not in location_selections:
+                        location_selections[location] = []
+                    location_selections[location].append(bonus.team)
+                    team_preferences[bonus.team.id] = location
+            
+            logger.info(f"Found location preferences: {location_selections}")
+            
+            # Assign teams to their preferred locations (max 2 teams per location)
+            for location, location_teams in location_selections.items():
+                for idx, team in enumerate(location_teams):
+                    if idx < 2:  # Only consider the first 2 teams for each location
+                        if location not in team_locations:
+                            team_locations[location] = []
+                        team_locations[location].append(team)
+    except Exception as e:
+        logger.error(f"Error processing location preferences: {e}")
+    
+    # Process remaining teams based on previous game results
+    remaining_teams = [team for team in teams if team.id not in team_preferences]
+    # Shuffle the remaining teams to avoid bias
+    random.shuffle(remaining_teams)
+    
+    # Determine location for teams with no preference based on previous game results
+    for team in remaining_teams:
+        # Find the team's most recent game
+        prev_games = Game.objects.filter(
+            models.Q(team1=team) | models.Q(team2=team),
+            round__number=round_obj.number - 1
+        ).order_by('-created')
+        
+        if prev_games.exists():
+            prev_game = prev_games.first()
+            prev_location = prev_game.location
+            prev_location_index = active_locations.index(prev_location)
+            
+            # Team won if it was team1 and win is True, or team2 and win is False
+            won = (team == prev_game.team1 and prev_game.win) or (team == prev_game.team2 and not prev_game.win)
+            
+            if won:
+                # Move up one location if won, unless already at top
+                new_location_index = min(prev_location_index + 1, location_count - 1)
             else:
-                # If no previous game found, place in middle location
-                location = active_locations[location_count // 2]
+                # Move down one location if lost, unless already at bottom
+                new_location_index = max(prev_location_index - 1, 0)
             
-            if location not in team_locations:
-                team_locations[location] = []
+            location = active_locations[new_location_index]
+        else:
+            # Raise an error if we can't determine location based on previous games
+            logger.error(f"Couldn't determine location for team {team.name} based on previous games")
+            raise Exception("Couldn't determine location for all teams")
+        
+        # Check if we can add this team to the location (max 2 teams per location)
+        if location not in team_locations:
+            team_locations[location] = [team]
+        elif len(team_locations[location]) < 2:
             team_locations[location].append(team)
+        else:
+            # This location is full, add to misplaced teams
+            misplaced_teams.append(team)
+    
+    # Handle misplaced teams - assign them to locations with fewer than 2 teams
+    for team in misplaced_teams:
+        for location in active_locations:
+            if location not in team_locations:
+                team_locations[location] = [team]
+                break
+            elif len(team_locations[location]) < 2:
+                team_locations[location].append(team)
+                break
     
     # Create games for each location
     games = []
     
     for location, location_teams in team_locations.items():
-        # Shuffle teams within each location
-        random.shuffle(location_teams)
-        
-        # Pair teams within each location
-        for i in range(0, len(location_teams), 2):
-            if i + 1 < len(location_teams):
-                game = Game.objects.create(
-                    team1=location_teams[i],
-                    team2=location_teams[i+1],
-                    round=round_obj,
-                    location=location,
-                    finished=False
-                )
-                games.append(game)
-            elif len(location_teams) % 2 == 1:
-                # Handle odd number of teams at a location
-                # Either find a team from nearby location or give a bye
-                handled = False
-                
-                # Try to find opponent from adjacent locations
-                for offset in [1, -1]:
-                    adj_idx = active_locations.index(location) + offset
-                    if 0 <= adj_idx < len(active_locations):
-                        adjacent_location = active_locations[adj_idx]
-                        if adjacent_location in team_locations and len(team_locations[adjacent_location]) % 2 == 1:
-                            # Take the last team from the adjacent location
-                            opponent = team_locations[adjacent_location].pop()
-                            game = Game.objects.create(
-                                team1=location_teams[i],
-                                team2=opponent,
-                                round=round_obj,
-                                location=location,  # Use the current team's location
-                                finished=False
-                            )
-                            games.append(game)
-                            handled = True
-                            break
-                
-                if not handled:
-                    # If no match found, this team gets a bye - no game created
-                    logger.info(f"Team {location_teams[i].name} gets a bye in round {round_obj.number}")
+        # Only create games for locations with exactly 2 teams
+        if len(location_teams) == 2:
+            game = Game.objects.create(
+                team1=location_teams[0],
+                team2=location_teams[1],
+                round=round_obj,
+                location=location,
+                finished=False
+            )
+            games.append(game)
+            logger.info(f"Created game at {location} between {location_teams[0].name} and {location_teams[1].name}")
+        else:
+            logger.error(f"Location {location} has {len(location_teams)} teams")
+            raise Exception("Invalid number of teams per location")
     
     return games
 
@@ -308,28 +346,46 @@ def move_to_bonus_stage(round_id, winners):
     # Winning teams will get bonus every 3 distance
     teams = Team.objects.all()
     for team in teams:
-        # For debuging, always give bonus to the first team
-        if team == teams[0]:
+        if team in winners and team.distance % 3 == 0:
             Bonus.objects.create(
                 team=team,
                 round=new_round,
                 finished=False,
-                description="Bonus for winning the round"
+                description="Bonus for stepping every 3 distance"
             )
-        elif team in winners and team.distance % 3 == 0:
-            Bonus.objects.create(
-                team=team,
-                round=new_round,
-                finished=False,
-                description="Bonus for winning the round"
-            )
+            logger.info(f"Team {team.name} got a bonus for stepping every 3 distance")
         else:
-            Bonus.objects.create(
-                team=team,
-                round=new_round,
-                finished=True,
-                description="No bonus this round"
-            )
+            # Check if the team has lost 3 times in a row in the LOCATIONS[0]
+            prev_games = Game.objects.filter(
+                models.Q(team1=team) | models.Q(team2=team)
+            ).order_by('-created')
+            loser_3_times = False
+            if prev_games.count() >= 3:
+                loses_in_row = 0
+                for i in range(3):
+                    if prev_games[i].location == LOCATIONS[0] and prev_games[i].win is False:
+                        loses_in_row += 1
+                    else:
+                        break
+
+                if loses_in_row > 0 and loses_in_row % 3 == 0:
+                    loser_3_times = True
+
+            if loser_3_times:
+                Bonus.objects.create(
+                    team=team,
+                    round=new_round,
+                    finished=False,
+                    description="Compensation bonus for losing 3 times in a row"
+                )
+                logger.info(f"Team {team.name} got a bonus for losing 3 times in a row")
+            else:
+                Bonus.objects.create(
+                    team=team,
+                    round=new_round,
+                    finished=True,
+                    description="No bonus this round"
+                )
     
     return new_round
 

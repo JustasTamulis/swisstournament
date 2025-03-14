@@ -463,6 +463,16 @@ def mark_game(request):
             else:
                 # No winner yet, proceed to bonus stage normally
                 bonus_round = move_to_bonus_stage(round_id, winners)
+
+                # Check if there are any bonuses left
+                if all_bonuses_used(bonus_round.id):
+                    logger.info("No bonuses created for bonus stage %s. Moving to new round", bonus_round.number)
+                    new_round = move_to_new_round(bonus_round.id)
+                    return Response({
+                        'message': 'No bonuses created for bonus stage. Starting new round.',
+                        'round': RoundSerializer(new_round).data
+                    })
+
                 return Response({
                     'message': 'All games finished. Moving to bonus stage.',
                     'round': RoundSerializer(bonus_round).data
@@ -481,7 +491,7 @@ def use_bonus(request):
     try:
         team_id = request.data.get('team_id')
         bonus_type = request.data.get('bonus_type')
-        bonus_target_team_id = request.data.get('bonus_target')
+        bonus_target = request.data.get('bonus_target')
         round_id = request.data.get('round_id')
         
         # Check if the round is active
@@ -504,12 +514,30 @@ def use_bonus(request):
         
         # Check if bonus target exists, if required
         if "distance" in bonus_type:
-            if not bonus_target_team_id:
+            if not bonus_target:
                 logger.warning("Bonus target is required for %s. Request data: %s", 
                              bonus_type, request.data)
                 return Response({'error': 'Bonus target is required for this bonus type'}, 
                                status=status.HTTP_400_BAD_REQUEST)
-            target_team = get_object_or_404(Team, id=bonus_target_team_id)
+            target_team = get_object_or_404(Team, id=bonus_target)
+        
+        # Check location selection limits
+        if bonus_type == "select_location":
+            if not bonus_target:
+                return Response({'error': 'Location is required for this bonus type'}, 
+                               status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if two teams have already selected this location for this round number
+            location_count = Bonus.objects.filter(
+                round__number=round_obj.number,
+                bonus_type='select_location',
+                bonus_target=bonus_target,
+                finished=True
+            ).count()
+            
+            if location_count >= 2:
+                return Response({'error': 'This location has already been selected by two teams'}, 
+                               status=status.HTTP_400_BAD_REQUEST)
 
         # Apply bonus logic
         match bonus_type:
@@ -536,14 +564,19 @@ def use_bonus(request):
                 else:
                     target_team.distance -= 1
                     target_team.save()
+            case "select_location":
+                # Location selection handled at validation step
+                pass
             case _:
                 logger.warning("Invalid bonus type: %s. Request data: %s", 
                              bonus_type, request.data)
                 return Response({'error': 'Invalid bonus type'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Mark bonus as used and update description
+        # Mark bonus as used and update description and types
         bonus.finished = True
         bonus.description = f"Used bonus: {bonus_type}"
+        bonus.bonus_type = bonus_type
+        bonus.bonus_target = bonus_target
         bonus.save()
         
         logger.info("Bonus '%s' used successfully by team %s", bonus_type, team.name)

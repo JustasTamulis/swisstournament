@@ -40,9 +40,6 @@ class BetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BonusSerializer(serializers.ModelSerializer):
-    team_details = TeamSerializer(source='team', read_only=True)
-    round_details = RoundSerializer(source='round', read_only=True)
-    
     class Meta:
         model = Bonus
-        fields = '__all__'
+        fields = ('id', 'team', 'round', 'finished', 'description', 'bonus_type', 'bonus_target', 'created')

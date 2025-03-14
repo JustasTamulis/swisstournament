@@ -12,6 +12,15 @@ import {
 } from '../../services/tournamentService';
 import { useTournament } from '../../context/TournamentContext';
 
+// Import locations from context or define here
+const LOCATIONS = [
+    "Biblioteka",
+    "Stalas",
+    "Sofa", 
+    "Lova",
+    "Palėpė",
+];
+
 const BonusPage = () => {
     const [searchParams] = useSearchParams();
     const [playerTeam, setPlayerTeam] = useState(null);
@@ -26,6 +35,8 @@ const BonusPage = () => {
     const [selectedBonus, setSelectedBonus] = useState(null);
     const [targetTeam, setTargetTeam] = useState('');
     const [showTargetSelect, setShowTargetSelect] = useState(false);
+    const [showLocationSelect, setShowLocationSelect] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState('');
     
     // Get tournament context
     const { roundInfo, roundChanged } = useTournament();
@@ -88,8 +99,13 @@ const BonusPage = () => {
         // Determine if we need to show target selection
         if (bonusType === 'plus_distance' || bonusType === 'minus_distance') {
             setShowTargetSelect(true);
+            setShowLocationSelect(false);
+        } else if (bonusType === 'select_location') {
+            setShowLocationSelect(true);
+            setShowTargetSelect(false);
         } else {
             setShowTargetSelect(false);
+            setShowLocationSelect(false);
         }
         
         setDialogOpen(true);
@@ -100,6 +116,8 @@ const BonusPage = () => {
         setSelectedBonus(null);
         setTargetTeam('');
         setShowTargetSelect(false);
+        setShowLocationSelect(false);
+        setSelectedLocation('');
     };
 
     const handleBonusConfirm = async () => {
@@ -112,6 +130,12 @@ const BonusPage = () => {
         // Check if we need a target and if it's selected
         if ((selectedBonus === 'plus_distance' || selectedBonus === 'minus_distance') && !targetTeam) {
             setError('You must select a target team for this bonus type');
+            return;
+        }
+        
+        // Check if we need a location and if it's selected
+        if (selectedBonus === 'select_location' && !selectedLocation) {
+            setError('You must select a location for this bonus type');
             return;
         }
         
@@ -130,6 +154,11 @@ const BonusPage = () => {
                 bonusData.bonus_target = targetTeam;
             }
             
+            // Add target location if needed
+            if (selectedBonus === 'select_location') {
+                bonusData.bonus_target = selectedLocation;
+            }
+            
             await useBonus(bonusData);
             
             // Update bonus status
@@ -139,7 +168,7 @@ const BonusPage = () => {
             handleDialogClose();
         } catch (err) {
             console.error("Error using bonus:", err);
-            setError('Failed to use bonus. Please try again.');
+            setError(err.response?.data?.error || 'Failed to use bonus. Please try again.');
             handleDialogClose();
         } finally {
             setLoading(false);
@@ -207,6 +236,16 @@ const BonusPage = () => {
                                 Decrease Team Distance (-1)
                             </Button>
                         </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Button 
+                                variant="outlined" 
+                                fullWidth 
+                                onClick={() => handleBonusSelect('select_location')}
+                                sx={{ height: '100px' }}
+                            >
+                                Select Next Round Location
+                            </Button>
+                        </Grid>
                     </Grid>
                 </Paper>
             ) : bonus && bonus.finished ? (
@@ -267,6 +306,25 @@ const BonusPage = () => {
                             </Select>
                         </FormControl>
                     )}
+                    
+                    {showLocationSelect && (
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <InputLabel id="location-label">Select Location</InputLabel>
+                            <Select
+                                labelId="location-label"
+                                id="location-select"
+                                value={selectedLocation}
+                                label="Location"
+                                onChange={(e) => setSelectedLocation(e.target.value)}
+                            >
+                                {LOCATIONS.map((location) => (
+                                    <MenuItem key={location} value={location}>
+                                        {location}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDialogClose} color="primary">
@@ -276,7 +334,7 @@ const BonusPage = () => {
                         onClick={handleBonusConfirm} 
                         color="primary" 
                         autoFocus
-                        disabled={showTargetSelect && !targetTeam}
+                        disabled={(showTargetSelect && !targetTeam) || (showLocationSelect && !selectedLocation)}
                     >
                         Confirm
                     </Button>
@@ -295,6 +353,8 @@ function getReadableBonusName(bonusType) {
             return 'Increase Team Distance (+1)';
         case 'minus_distance':
             return 'Decrease Team Distance (-1)';
+        case 'select_location':
+            return 'Select Next Round Location';
         default:
             return bonusType;
     }

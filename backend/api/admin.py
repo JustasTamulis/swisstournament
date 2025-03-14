@@ -78,13 +78,16 @@ class OddsAdmin(admin.ModelAdmin):
 
 # Custom admin for Bonus
 class BonusAdmin(admin.ModelAdmin):
-    list_display = ('id', 'team', 'round', 'description', 'finished', 'created')
-    list_filter = ('finished', 'round')
-    search_fields = ('team__name', 'description')
+    list_display = ('id', 'team', 'round', 'description', 'bonus_type', 'bonus_target', 'finished', 'created')
+    list_filter = ('finished', 'round', 'bonus_type')
+    search_fields = ('team__name', 'description', 'bonus_type', 'bonus_target')
     ordering = ('-created',)
     fieldsets = (
         ('Bonus Info', {
             'fields': ('team', 'round', 'description')
+        }),
+        ('Bonus Details', {
+            'fields': ('bonus_type', 'bonus_target')
         }),
         ('Status', {
             'fields': ('finished',)

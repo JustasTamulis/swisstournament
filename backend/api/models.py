@@ -64,6 +64,8 @@ class Bonus(models.Model):
     round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name='bonuses')
     finished = models.BooleanField(default=False)
     description = models.CharField(max_length=255)
+    bonus_type = models.CharField(max_length=50, blank=True, null=True)
+    bonus_target = models.CharField(max_length=50, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 

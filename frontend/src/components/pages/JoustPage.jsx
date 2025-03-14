@@ -217,20 +217,29 @@ const JoustPage = () => {
                         alignItems: 'center',
                         mt: 2,
                         mb: 4,
-                        position: 'relative'
+                        position: 'relative',
+                        maxWidth: '600px',
+                        width: '100%',
+                        mx: 'auto'
                     }}>
                         {/* Player's team */}
                         <Box sx={{ 
-                            alignSelf: 'flex-start', 
-                            mb: 1,
-                            bgcolor: 'rgba(63, 81, 181, 0.1)',
-                            px: 2,
-                            py: 1,
-                            borderRadius: '4px'
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-start',
+                            mb: 1
                         }}>
-                            <Typography variant="h5" fontWeight="bold" color="primary">
-                                {playerTeam?.name}
-                            </Typography>
+                            <Box sx={{ 
+                                bgcolor: 'rgba(63, 81, 181, 0.1)',
+                                px: 2,
+                                py: 1,
+                                borderRadius: '4px',
+                                maxWidth: '60%'
+                            }}>
+                                <Typography variant="h5" fontWeight="bold" color="primary">
+                                    {playerTeam?.name}
+                                </Typography>
+                            </Box>
                         </Box>
                         
                         {/* VS indicator */}
@@ -256,16 +265,22 @@ const JoustPage = () => {
                         
                         {/* Opponent's team */}
                         <Box sx={{ 
-                            alignSelf: 'flex-end', 
-                            mt: 1,
-                            bgcolor: 'rgba(244, 67, 54, 0.1)',
-                            px: 2,
-                            py: 1,
-                            borderRadius: '4px'
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            mt: 1
                         }}>
-                            <Typography variant="h5" fontWeight="bold" color="error">
-                                {opponent}
-                            </Typography>
+                            <Box sx={{ 
+                                bgcolor: 'rgba(244, 67, 54, 0.1)',
+                                px: 2,
+                                py: 1,
+                                borderRadius: '4px',
+                                maxWidth: '60%'
+                            }}>
+                                <Typography variant="h5" fontWeight="bold" color="error">
+                                    {opponent}
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
                     

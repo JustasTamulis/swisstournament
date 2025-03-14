@@ -121,17 +121,6 @@ const TopNav = ({ content }) => {
                         sx={{ fontWeight: 'bold' }}
                     />
                 );
-            case 'finished':
-                return (
-                    <Chip 
-                        icon={<EmojiEventsIcon />} 
-                        label="Tournament Completed" 
-                        color="error" 
-                        variant="outlined"
-                        size="small" 
-                        sx={{ fontWeight: 'bold' }}
-                    />
-                );
             default:
                 return (
                     <Chip 

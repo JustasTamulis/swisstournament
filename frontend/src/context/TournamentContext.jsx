@@ -48,6 +48,7 @@ export const TournamentProvider = ({ children }) => {
             // Update ref for future comparisons
             previousRoundInfoRef.current = {...data};
             
+            // Ensure we're working with round number, not ID
             setRoundInfo(data);
             setError(null);
         } catch (err) {

@@ -183,21 +183,12 @@ const BetPage = () => {
     }
 
     return (
-        <Box sx={{ padding: 2 }}>
+        <Box sx={{ padding: 0 }}>
             <Box className="TopBar" sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <MonetizationOnIcon />
                 <Typography sx={{marginLeft: '15px', fontWeight: 'bold'}} variant='h6'>
                     {roundStage === 'finished' ? 'Tournament Results' : 'Current Odds & Bets'}
                 </Typography>
-                
-                {roundStage === 'finished' && (
-                    <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.main', px: 2, py: 0.5, borderRadius: 1 }}>
-                        <EmojiEventsIcon sx={{ color: 'white' }} />
-                        <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }}>
-                            Tournament Completed!
-                        </Typography>
-                    </Box>
-                )}
             </Box>
             
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -205,10 +196,10 @@ const BetPage = () => {
             {/* Show different content based on tournament stage */}
             {roundStage === 'finished' && tournamentResults ? (
                 <Box>
-                    {/* Display Winners */}
+                    {/* Display Race Winners */}
                     <Paper elevation={3} sx={{ p: 3, mb: 3, textAlign: 'center' }}>
                         <Typography variant="h5" gutterBottom>
-                            Tournament Winners
+                            Race Winners
                         </Typography>
                         
                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 3 }}>
@@ -258,10 +249,47 @@ const BetPage = () => {
                         </Box>
                     </Paper>
                     
+                    {/* Add "The Oracles" section */}
+                    <Paper elevation={3} sx={{ p: 3, mb: 3, textAlign: 'center' }}>
+                        <Typography variant="h5" gutterBottom>
+                            The Oracles
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mt: 3 }}>
+                            {/* Betting Winner */}
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    mb: 1,
+                                    width: '60px',
+                                    height: '60px',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'rgba(75, 0, 130, 0.2)',
+                                    border: '2px solid purple',
+                                    mx: 'auto'
+                                }}>
+                                    <EmojiEventsIcon sx={{ fontSize: '2rem', color: 'purple' }} />
+                                </Box>
+                                <Typography variant="h6">
+                                    {tournamentResults.betting_results.length > 0 ? 
+                                        tournamentResults.betting_results[0].team.name : 
+                                        "Not determined"}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {tournamentResults.betting_results.length > 0 ? 
+                                        `${tournamentResults.betting_results[0].total_points.toFixed(2)} points` : 
+                                        ""}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Paper>
+                    
                     {/* Display Betting Results */}
-                    <Paper elevation={3} sx={{ mt: 4 }}>
-                        <TableContainer>
-                            <Table size="small">
+                    <Paper elevation={3} sx={{ mt: 4, width: '100%', overflow: 'auto' }}>
+                        <TableContainer sx={{ width: '100%' }}>
+                            <Table size="small" sx={{ minWidth: '100%' }}>
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Rank</TableCell>
@@ -316,41 +344,73 @@ const BetPage = () => {
                         Bets available: {tableData.bets_available}
                     </Typography>
                     
-                    <Paper elevation={3}>
-                        <TableContainer>
-                            <Table size="small">
+                    <Paper elevation={3} sx={{ width: '100%', overflow: 'auto' }}>
+                        <TableContainer sx={{ width: '100%' }}>
+                            <Table size="small" sx={{ minWidth: '100%', tableLayout: 'fixed' }}>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ p: 1, fontSize: '0.8rem' }}>Team</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '40px' }}>Dist</TableCell>
-                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '80px' }}>Odds</TableCell>
-                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '80px' }}>Bets</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell sx={{ p: 1 }}></TableCell>
-                                        <TableCell sx={{ p: 1 }}></TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>1st</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>2nd</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>1st</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.7rem', width: '40px' }}>2nd</TableCell>
+                                        <TableCell sx={{ p: 1, fontSize: '0.8rem', width: '35%' }}>Team</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '10%' }}>Dist</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '20%' }}>Odds</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '20%' }}>Bets</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '15%' }}>Action</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {tableData.teams.map((team) => (
                                         <TableRow key={team.id} sx={{
-                                            bgcolor: team.is_player_team ? 'rgba(63, 81, 181, 0.08)' : 'inherit'
+                                            bgcolor: team.is_player_team ? 'rgba(63, 81, 181, 0.08)' : 'inherit',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                                            }
                                         }}>
-                                            <TableCell component="th" scope="row" sx={{ p: 1 }}>
+                                            <TableCell 
+                                                component="th" 
+                                                scope="row" 
+                                                sx={{ 
+                                                    p: 1,
+                                                    cursor: 'pointer',
+                                                    position: 'relative'
+                                                }} 
+                                                title={team.description}
+                                                onClick={(e) => {
+                                                    const tooltip = document.createElement('div');
+                                                    tooltip.innerHTML = team.description;
+                                                    tooltip.style.position = 'absolute';
+                                                    tooltip.style.backgroundColor = 'white';
+                                                    tooltip.style.padding = '8px';
+                                                    tooltip.style.borderRadius = '4px';
+                                                    tooltip.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                                                    tooltip.style.zIndex = '1000';
+                                                    tooltip.style.maxWidth = '200px';
+                                                    tooltip.style.left = `${e.clientX}px`;
+                                                    tooltip.style.top = `${e.clientY}px`;
+                                                    
+                                                    document.body.appendChild(tooltip);
+                                                    
+                                                    setTimeout(() => {
+                                                        document.body.removeChild(tooltip);
+                                                    }, 3000);
+                                                }}
+                                            >
                                                 <Typography variant="body2" fontWeight={team.is_player_team ? 'bold' : 'normal'}>
                                                     {team.name} {team.is_player_team && '(You)'}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.distance}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.odd1}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.odd2}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet1}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet2}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1, width: '60px' }}>
+                                            <TableCell align="center" sx={{ p: 1 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.odd1}</Box>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.odd2}</Box>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={{ p: 1 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.bet1}</Box>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.bet2}</Box>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell align="center" sx={{ p: 1 }}>
                                                 {!team.is_player_team && (
                                                     <Button 
                                                         variant="contained" 

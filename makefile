@@ -86,7 +86,7 @@ data_to_heroku: ## Load data to Heroku
 	heroku run python backend/manage.py loaddata heroku_db_data.json
 
 remove_all_heroku_data: ## Remove all data from Heroku
-	heroku pg:reset DATABASE_URL
+	heroku pg:reset DATABASE_URL --confirm bday2025
 
 view_session: ## View session data
 	cd backend && python manage.py shell -c "from django.contrib.sessions.models import Session; print('Available Sessions:'); [print(f'Session {s.pk} - Expires: {s.expire_date} - Data: {s.get_decoded()}') for s in Session.objects.all()]"
@@ -126,7 +126,7 @@ populate_db: ## Load initial data from fixtures
 	cd backend && python manage.py loaddata api/fixtures/initial_data.json
 	@echo "Initial data loaded successfully"
 
-init_db: reset_db create_db generate_fixtures populate_db ## Reset, create and populate database with initial data
+init_db: reset_db create_db generate_fixtures populate_db admin ## Reset, create and populate database with initial data
 
 backup_db: ## Create a database backup
 	@mkdir -p $(BACKUP_DIR)

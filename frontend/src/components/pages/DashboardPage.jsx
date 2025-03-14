@@ -13,8 +13,7 @@ import {
     getGamesForRound
 } from '../../services/tournamentService';
 
-// Heroku app URL as a constant for easy updating
-const HEROKU_URL = 'https://bday2025-daa089d5c915.herokuapp.com';
+// Local URL constant
 const LOCAL_URL = window.location.origin;
 
 const DashboardPage = () => {
@@ -373,13 +372,11 @@ const DashboardPage = () => {
                                 <TableCell align="center">Joust Status</TableCell>
                                 <TableCell align="center">Bonus Status</TableCell>
                                 <TableCell>Local Link</TableCell>
-                                <TableCell>Heroku Link</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {teams.map((team) => {
                                 const localLink = `${LOCAL_URL}/?player_id=${team.identifier}`;
-                                const herokuLink = `${HEROKU_URL}/?player_id=${team.identifier}`;
                                 
                                 // Get team status (either real from API or mock data for demo)
                                 const teamStatus = stageStatuses[team.id] || getMockStatusForTeam(team.id);
@@ -442,20 +439,6 @@ const DashboardPage = () => {
                                                     variant="outlined" 
                                                     size="small"
                                                     onClick={() => copyToClipboard(localLink)}
-                                                >
-                                                    Copy
-                                                </Button>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Link href={herokuLink} target="_blank" sx={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
-                                                    {herokuLink}
-                                                </Link>
-                                                <Button 
-                                                    variant="outlined" 
-                                                    size="small"
-                                                    onClick={() => copyToClipboard(herokuLink)}
                                                 >
                                                     Copy
                                                 </Button>

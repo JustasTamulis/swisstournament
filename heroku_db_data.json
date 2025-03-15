@@ -3,78 +3,104 @@
   "model": "api.team",
   "pk": 1,
   "fields": {
-    "identifier": "kaktomusa-nfjfwinf3uh3tu89hg8879gw98h3t",
-    "name": "Kaktomuša",
+    "identifier": "infusion-nfjfwinf3uh3tu89hg8879gw98h3t",
+    "name": "Infusion",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
   "model": "api.team",
   "pk": 2,
   "fields": {
-    "identifier": "papirusas-j38f7h384fh87fh38f7h3",
-    "name": "Papirusas",
+    "identifier": "meta-7fg76sdf786sd7f6g",
+    "name": "Mėta",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
   "model": "api.team",
   "pk": 3,
   "fields": {
-    "identifier": "grandinine-reakcija-7fg76sdf786sd7f6g",
-    "name": "Grandininė reakcija",
+    "identifier": "citro-23j4h23j4h324j23h4",
+    "name": "Citro",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
   "model": "api.team",
   "pk": 4,
   "fields": {
-    "identifier": "sviesos-greitis-98h3rgf87g387fg38",
-    "name": "Šviesos greitis",
+    "identifier": "honey-98h3g87g387fg3iug3iug3",
+    "name": "Honey",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
   "model": "api.team",
   "pk": 5,
   "fields": {
-    "identifier": "kibirkstis-23j4h23j4h324j23h4",
-    "name": "Kibirkštis",
+    "identifier": "imunititai-83hf83fh83f8h38fh83fh",
+    "name": "Imunititai",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
   "model": "api.team",
   "pk": 6,
   "fields": {
-    "identifier": "dobilas-98h3g87g387fg3iug3iug3",
-    "name": "Dobilas",
+    "identifier": "malonumas-98hf983hf98h3f983hf",
+    "name": "Malonumas",
     "description": "Vardas ir pavardas",
     "bets_available": 1,
     "distance": 0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
+  }
+},
+{
+  "model": "api.team",
+  "pk": 7,
+  "fields": {
+    "identifier": "gurksnis-98h3g87f3g87f3g87f3g",
+    "name": "Gurkšnis",
+    "description": "Vardas ir pavardas",
+    "bets_available": 1,
+    "distance": 0,
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
+  }
+},
+{
+  "model": "api.team",
+  "pk": 8,
+  "fields": {
+    "identifier": "melisa-98h3g87f3g87f3g87f3g",
+    "name": "Melisa",
+    "description": "Vardas ir pavardas",
+    "bets_available": 1,
+    "distance": 0,
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -84,8 +110,8 @@
     "number": 1,
     "active": true,
     "stage": "betting",
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -96,8 +122,8 @@
     "team": 1,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -108,8 +134,8 @@
     "team": 2,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -120,8 +146,8 @@
     "team": 3,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -132,8 +158,8 @@
     "team": 4,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -144,8 +170,8 @@
     "team": 5,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 },
 {
@@ -156,8 +182,32 @@
     "team": 6,
     "odd1": 10.0,
     "odd2": 5.0,
-    "created": "2025-03-14T14:21:08.074Z",
-    "modified": "2025-03-14T14:21:08.074Z"
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 7,
+  "fields": {
+    "round": 1,
+    "team": 7,
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
+  }
+},
+{
+  "model": "api.odds",
+  "pk": 8,
+  "fields": {
+    "round": 1,
+    "team": 8,
+    "odd1": 10.0,
+    "odd2": 5.0,
+    "created": "2025-03-15T16:18:35.798Z",
+    "modified": "2025-03-15T16:18:35.798Z"
   }
 }
 ]

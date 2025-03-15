@@ -7,19 +7,19 @@ from datetime import datetime, timezone
 # The names should not repeat
 # The description will be altered later
 teams = {
-    'kaktomusa-nfjfwinf3uh3tu89hg8879gw98h3t': {'name': 'Kaktomuša', 'description': 'Vardas ir pavardas'},
-    'papirusas-j38f7h384fh87fh38f7h3': {'name': 'Papirusas', 'description': 'Vardas ir pavardas'},
-    # 'grandinine-reakcija-7fg76sdf786sd7f6g': {'name': 'Grandininė reakcija', 'description': 'Vardas ir pavardas'},
-    # 'sviesos-greitis-98h3rgf87g387fg38': {'name': 'Šviesos greitis', 'description': 'Vardas ir pavardas'},
-    # 'kibirkstis-23j4h23j4h324j23h4': {'name': 'Kibirkštis', 'description': 'Vardas ir pavardas'},
-    # 'dobilas-98h3g87g387fg3iug3iug3': {'name': 'Dobilas', 'description': 'Vardas ir pavardas'},
-    # 'zaibas-83hf83fh83f8h38fh83fh': {'name': 'Žaibas', 'description': 'Vardas ir pavardas'},
-    # 'spurga-98hf983hf98h3f983hf': {'name': 'Spurga', 'description': 'Vardas ir pavardas'},
+    'infusion-nfjfwinf3uh3tu89hg8879gw98h3t': {'name': 'Infusion', 'description': 'Vardas ir pavardas'},
+    'meta-7fg76sdf786sd7f6g': {'name': 'Mėta', 'description': 'Vardas ir pavardas'},
+    'citro-23j4h23j4h324j23h4': {'name': 'Citro', 'description': 'Vardas ir pavardas'},
+    'honey-98h3g87g387fg3iug3iug3': {'name': 'Honey', 'description': 'Vardas ir pavardas'},
+    'imunititai-83hf83fh83f8h38fh83fh': {'name': 'Imunititai', 'description': 'Vardas ir pavardas'},
+    'malonumas-98hf983hf98h3f983hf': {'name': 'Malonumas', 'description': 'Vardas ir pavardas'},
+    'gurksnis-98h3g87f3g87f3g87f3g': {'name': 'Gurkšnis', 'description': 'Vardas ir pavardas'},
+    'melisa-98h3g87f3g87f3g87f3g': {'name': 'Melisa', 'description': 'Vardas ir pavardas'},
 }
 
 # Define odds parameters
-odd1 = 1.5
-odd2 = 2.5
+odd1 = 10
+odd2 = 5
 
 # Current timestamp in ISO format for created/modified fields
 timestamp = datetime.now(timezone.utc).isoformat()

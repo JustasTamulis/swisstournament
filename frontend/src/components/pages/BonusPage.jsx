@@ -17,8 +17,7 @@ const LOCATIONS = [
     "Biblioteka",
     "Stalas",
     "Sofa", 
-    "Lova",
-    "Palėpė",
+    "Lova"
 ];
 
 const BonusPage = () => {

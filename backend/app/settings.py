@@ -321,5 +321,5 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # print("STATICFILES_DIRS", STATICFILES_DIRS)
 
 # Tournament settings
-TOURNAMENT_FINISH_DISTANCE = 6
+TOURNAMENT_FINISH_DISTANCE = 10
 

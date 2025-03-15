@@ -16,7 +16,26 @@ import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTournament } from '../../context/TournamentContext';
-import BetIcon from '../../assets/Bet.svg'; // Using this for all buttons for testing
+import TrackActiveCurrentImg from '../../assets/Buttons/Track-Inactive-Current.png';
+import TrackActiveImg from '../../assets/Buttons/Track-Active.png';
+import TrackInactiveCurrentImg from '../../assets/Buttons/Track-Active-Current.png';
+import TrackInactiveImg from '../../assets/Buttons/Track-Inactive.png';
+import BetActiveCurrentImg from '../../assets/Buttons/Bet-Inactive-Current.png';
+import BetActiveImg from '../../assets/Buttons/Bet-Active.png';
+import BetInactiveCurrentImg from '../../assets/Buttons/Bet-Active-Current.png';
+import BetInactiveImg from '../../assets/Buttons/Bet-Inactive.png';
+import JoustActiveCurrentImg from '../../assets/Buttons/Joust-Inactive-Current.png';
+import JoustActiveImg from '../../assets/Buttons/Joust-Active.png';
+import JoustInactiveCurrentImg from '../../assets/Buttons/Joust-Active-Current.png';
+import JoustInactiveImg from '../../assets/Buttons/Joust-Inactive.png';
+import BonusActiveCurrentImg from '../../assets/Buttons/Bonus-Inactive-Current.png';
+import BonusActiveImg from '../../assets/Buttons/Bonus-Active.png';
+import BonusInactiveCurrentImg from '../../assets/Buttons/Bonus-Active-Current.png';
+import BonusInactiveImg from '../../assets/Buttons/Bonus-Inactive.png';
+import AboutActiveCurrentImg from '../../assets/Buttons/About-Inactive-Current.png';
+import AboutActiveImg from '../../assets/Buttons/About-Active.png';
+import AboutInactiveCurrentImg from '../../assets/Buttons/About-Active-Current.png';
+import AboutInactiveImg from '../../assets/Buttons/About-Inactive.png';
 
 const TopNav = ({ content }) => {
     const [searchParams] = useSearchParams();
@@ -132,6 +151,48 @@ const TopNav = ({ content }) => {
         }
     };
 
+    // Map tab names to their corresponding button images
+    const getButtonImage = (tabName, isActive) => {
+        // Map tab names to stage names for comparison
+        const tabToStage = {
+            'bet': 'betting',
+            'joust': 'joust',
+            'bonus': 'bonus',
+            // Track and About don't have corresponding stages
+        };
+        
+        // Check if this tab corresponds to the current stage
+        const isCurrent = roundInfo?.stage === tabToStage[tabName] || 
+                         (roundInfo?.stage === 'final' && tabName === 'joust') ||
+                         (roundInfo?.stage === 'final-multiple-ties' && tabName === 'joust');
+        
+        // Return the appropriate image based on state
+        switch (tabName) {
+            case 'track':
+                return isActive 
+                    ? (isCurrent ? TrackActiveCurrentImg : TrackActiveImg)
+                    : (isCurrent ? TrackInactiveCurrentImg : TrackInactiveImg);
+            case 'bet':
+                return isActive 
+                    ? (isCurrent ? BetActiveCurrentImg : BetActiveImg)
+                    : (isCurrent ? BetInactiveCurrentImg : BetInactiveImg);
+            case 'joust':
+                return isActive 
+                    ? (isCurrent ? JoustActiveCurrentImg : JoustActiveImg)
+                    : (isCurrent ? JoustInactiveCurrentImg : JoustInactiveImg);
+            case 'bonus':
+                return isActive 
+                    ? (isCurrent ? BonusActiveCurrentImg : BonusActiveImg)
+                    : (isCurrent ? BonusInactiveCurrentImg : BonusInactiveImg);
+            case 'about':
+                return isActive 
+                    ? (isCurrent ? AboutActiveCurrentImg : AboutActiveImg)
+                    : (isCurrent ? AboutInactiveCurrentImg : AboutInactiveImg);
+            default:
+                return TrackInactiveImg; // Fallback
+        }
+    };
+
     return (
         <>
             <AppBar position="static" color="default" elevation={1} sx={{ mb: 2 }}>
@@ -168,11 +229,10 @@ const TopNav = ({ content }) => {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 cursor: 'pointer',
-                                                filter: isCurrentTab ? 'grayscale(100%)' : 'none',
                                             }}
                                         >
                                             <img 
-                                                src={BetIcon} 
+                                                src={getButtonImage(item.name, isCurrentTab)} 
                                                 alt={item.label} 
                                                 style={{ 
                                                     width: '100%',

@@ -349,11 +349,22 @@ const BetPage = () => {
                             <Table size="small" sx={{ minWidth: '100%', tableLayout: 'fixed' }}>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ p: 1, fontSize: '0.8rem', width: '35%' }}>Team</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '10%' }}>Dist</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '20%' }}>Odds</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '20%' }}>Bets</TableCell>
-                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '15%' }}>Action</TableCell>
+                                        <TableCell sx={{ p: 1, fontSize: '0.8rem', width: '26%' }}>Team</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '7%' }}>Dist</TableCell>
+                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '16%' }}>Odds</TableCell>
+                                        <TableCell align="center" colSpan={2} sx={{ p: 1, fontSize: '0.8rem', width: '16%' }}>Your Bets</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '10%' }}>All Bets</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem', width: '10%' }}>Action</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell sx={{ p: 1, fontSize: '0.8rem' }}></TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem' }}></TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>1st</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>2nd</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>1st</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>2nd</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>Total</TableCell>
+                                        <TableCell align="center" sx={{ p: 1, fontSize: '0.8rem' }}></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -398,18 +409,11 @@ const BetPage = () => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.distance}</TableCell>
-                                            <TableCell align="center" sx={{ p: 1 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{parseInt(team.odd1)}</Box>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{parseInt(team.odd2)}</Box>
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell align="center" sx={{ p: 1 }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.bet1}</Box>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.bet2}</Box>
-                                                </Box>
-                                            </TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{parseInt(team.odd1)}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{parseInt(team.odd2)}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet1}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.bet2}</TableCell>
+                                            <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.total_bet_count}</TableCell>
                                             <TableCell align="center" sx={{ p: 1 }}>
                                                 {!team.is_player_team && (
                                                     <Button 

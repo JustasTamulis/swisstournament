@@ -631,6 +631,9 @@ def get_betting_table(request):
         teams = Team.objects.all().order_by('-distance')
         odds_data = Odds.objects.filter(round=round_id)
         
+        # Get ALL bets across ALL rounds to count total bet frequencies
+        all_bets = Bet.objects.all()
+        
         # Build result table with all required data
         result_table = []
         
@@ -645,6 +648,9 @@ def get_betting_table(request):
             bet1_sum = sum(bet.odds.odd1 for bet in team_bets if bet.odds) if team_bets else 0
             bet2_sum = sum(bet.odds.odd2 for bet in team_bets if bet.odds) if team_bets else 0
             
+            # Count bets placed on this team by all players across ALL rounds
+            team_bet_count = all_bets.filter(bet_on_team=team.id).count()
+            
             # Build team entry
             result_table.append({
                 'id': team.id,
@@ -655,6 +661,7 @@ def get_betting_table(request):
                 'odd2': odd2,
                 'bet1': bet1_sum,
                 'bet2': bet2_sum,
+                'total_bet_count': team_bet_count,
                 'is_player_team': team.id == player_team.id
             })
         

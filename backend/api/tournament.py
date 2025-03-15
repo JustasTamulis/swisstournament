@@ -55,14 +55,14 @@ def new_odds_logic(distances: list[int], finish_distance: int) -> list[tuple]:
             position_adjustment = 1.0
             
         # Calculate odds with minimum value of 1.1
-        odd1 = max(1.1, base_multiplier * position_adjustment)
+        odd1 = max(1, base_multiplier * position_adjustment)
         
         # odd2 is always lower than odd1 but still proportional
-        odd2 = max(1.05, odd1 * 0.7)  # 70% of odd1, minimum 1.05
+        odd2 = max(1, odd1 * 0.7)  # 70% of odd1, minimum 1.05
         
-        # Round to 2 decimal places
-        odd1 = round(odd1, 2)
-        odd2 = round(odd2, 2)
+        # Round to nearest integer
+        odd1 = round(odd1)
+        odd2 = round(odd2)
         
         results.append((odd1, odd2))
     

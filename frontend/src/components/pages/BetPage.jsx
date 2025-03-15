@@ -400,8 +400,8 @@ const BetPage = () => {
                                             <TableCell align="center" sx={{ p: 1, fontSize: '0.75rem' }}>{team.distance}</TableCell>
                                             <TableCell align="center" sx={{ p: 1 }}>
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.odd1}</Box>
-                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{team.odd2}</Box>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{parseInt(team.odd1)}</Box>
+                                                    <Box sx={{ fontSize: '0.75rem', mx: 1 }}>{parseInt(team.odd2)}</Box>
                                                 </Box>
                                             </TableCell>
                                             <TableCell align="center" sx={{ p: 1 }}>

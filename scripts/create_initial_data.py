@@ -7,14 +7,14 @@ from datetime import datetime, timezone
 # The names should not repeat
 # The description will be altered later
 teams = {
-    'infusion-nfjfwinf3uh3tu89hg8879gw98h3t': {'name': 'Infusion', 'description': 'Vardas ir pavardas'},
-    'meta-7fg76sdf786sd7f6g': {'name': 'Mėta', 'description': 'Vardas ir pavardas'},
-    'citro-23j4h23j4h324j23h4': {'name': 'Citro', 'description': 'Vardas ir pavardas'},
-    'honey-98h3g87g387fg3iug3iug3': {'name': 'Honey', 'description': 'Vardas ir pavardas'},
-    'imunititai-83hf83fh83f8h38fh83fh': {'name': 'Imunititai', 'description': 'Vardas ir pavardas'},
-    'malonumas-98hf983hf98h3f983hf': {'name': 'Malonumas', 'description': 'Vardas ir pavardas'},
-    'gurksnis-98h3g87f3g87f3g87f3g': {'name': 'Gurkšnis', 'description': 'Vardas ir pavardas'},
-    'melisa-98h3g87f3g87f3g87f3g': {'name': 'Melisa', 'description': 'Vardas ir pavardas'},
+    'infusion-nfjfwinf3uh3tu89hg8879gw98h3t': {'name': 'Infusion', 'description': 'Marijus ir Greta'},
+    'meta-7fg76sdf786sd7f6g': {'name': 'Mėta', 'description': 'Dominyka ir Aistė'},
+    'citro-23j4h23j4h324j23h4': {'name': 'Citro', 'description': 'Kristina ir Emilija'},
+    'honey-98h3g87g387fg3iug3iug3': {'name': 'Honey', 'description': 'Algis ir Emilė'},
+    'imunititai-83hf83fh83f8h38fh83fh': {'name': 'Imunititai', 'description': 'Martynas ir Džiugas'},
+    'malonumas-98hf983hf98h3f983hf': {'name': 'Malonumas', 'description': 'Simas ir Vilkas'},
+    'gurksnis-98h3g87f3g87f3g87f3g': {'name': 'Gurkšnis', 'description': 'Aurimas ir Milda'},
+    'melisa-98h3g87f3g87f3g87f3g': {'name': 'Melisa', 'description': 'Ignas ir Mantrimas'},
 }
 
 # Define odds parameters

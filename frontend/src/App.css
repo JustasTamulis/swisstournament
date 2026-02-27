@@ -1,29 +1,59 @@
-.Mui-selected {
-  background-color: #7acdd8 !important;
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #1f2937;
 }
 
-.TopBar {
-  display: flex;
-  padding: 10px;
-  background-color: #9e1818;
-  color: white;
-  align-items: center;
-  margin-bottom: 20px;
+body {
+  margin: 0;
+  background: #f8fafc;
 }
 
-.FormBox{
-  /* border: 1px solid #e0e0e0; */
+.app-shell {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+header nav {
   display: flex;
-  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+nav a {
+  text-decoration: none;
+  color: #334155;
+  padding-bottom: 0.25rem;
+}
+
+nav a.active {
+  border-bottom: 2px solid #2563eb;
+  color: #1d4ed8;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.cards article,
+section,
+table {
+  background: white;
+}
+
+.cards article {
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+table {
   width: 100%;
-  padding: 15px;
-  margin-bottom: 20px;
-  justify-content: space-evenly;
-  box-shadow: rgba(100,100,111,0.2) 0px 7px 29px 0px;
+  border-collapse: collapse;
 }
 
-.FormArea{
-  width: 33%;
-  padding:15px;
-  margin-bottom: 20px;
+th, td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
 }

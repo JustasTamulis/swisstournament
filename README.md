@@ -1,84 +1,132 @@
-# Tournament App
+# Web App Starter Template (Django + React)
 
-A real-time competitive tournament application that facilitates multi-stage competition between teams.
+This repository is now a **starter template** for future full-stack projects.  
+It provides a clean, opinionated baseline that demonstrates:
 
-## Overview
+- Django REST API design with seed data and custom actions
+- React pages with shared context and API integration
+- Local developer workflow and Heroku deployment path
 
-This application manages a tournament where teams compete through a series of rounds, each consisting of three stages: betting, jousting, and bonus selection. Teams progress along a race track, and the first to reach 12 points wins.
+---
 
-## Architecture
+## High-level structure
 
-The application is built with a Django REST Framework backend and React frontend.
+```text
+backend/
+  app/                # Django project settings + root urls
+  api/                # Example domain models, serializers, views, urls, tests
+frontend/
+  src/
+    components/pages/ # Example routed pages
+    context/          # Shared app state + bootstrap/refresh logic
+    services/         # API client functions
+```
 
-### Backend
+### Backend/Frontend interaction
 
-- **Data Models**: Teams, rounds, games, bets, odds, and bonuses
-- **Tournament Logic**: Round progression, game pairing, bet processing, and bonus application
-- **API Endpoints**: RESTful services for all tournament actions and data access
+1. React bootstraps through `AppTemplateProvider`.
+2. On startup, frontend calls `POST /api/seed/` once (safe if already seeded).
+3. Frontend fetches:
+   - `GET /api/summary/` (dashboard counts)
+   - `GET /api/stages/`
+   - `GET /api/features/`
+   - `GET /api/activity/`
+4. On `Features` page, clicking **Advance** calls `POST /api/features/<id>/advance/`.
+5. Backend persists status updates and writes an activity log event.
 
-### Frontend
+This gives you an end-to-end example of read + write + refresh behavior.
 
-#### Helper Files
+---
 
-- **tournamentService.js**: Handles all API communication with the backend, providing methods for fetching tournament data and submitting player actions. Includes functions for retrieving teams, rounds, games, placing bets, marking game results, and applying bonuses.
+## Template domain (example only)
 
-- **TournamentContext.jsx**: A React context that maintains shared state across components. It:
-  - Centralizes round information fetching to avoid duplicate requests
-  - Tracks the current page being viewed
-  - Provides the `useTournament` hook for accessing shared state
-  - Implements efficient polling by only fetching round info globally
+The sample domain models a delivery workflow:
 
-- **TopNav.jsx**: The navigation component that:
-  - Renders the app's main navigation bar
-  - Highlights the current page and tournament stage
-  - Preserves URL parameters when navigating
-  - Displays the current round and stage information
-  - Utilizes the TournamentContext for real-time updates
+- `Stage`: workflow lanes (Discovery, Implementation, Release)
+- `Feature`: backlog items with owners and status
+- `ActivityLog`: timeline of important changes
 
-#### Pages
+Replace these models/endpoints with your product domain once you start a real app.
 
-- **TrackPage.jsx**: Visualizes the race track with all teams' progress
-  - Shows teams sorted by distance with the player's team highlighted
-  - Animates position changes when teams advance
-  - Only polls for updates when actively viewed
+---
 
-- **BetPage.jsx**: Manages the betting stage functionality
-  - Displays all teams with their odds and the player's current bets
-  - Shows available bets and enables betting actions during betting stage
-  - Confirms bet placement with dialog prompts
-  - Updates in real-time when bets are placed
+## Quick start
 
-- **JoustPage.jsx**: Handles the jousting match functionality
-  - Shows upcoming opponents during joust stage
-  - Provides UI for recording match results (win/lose)
-  - Adapts to the current tournament stage
-  - Displays appropriate messages when matches are completed
+### Prerequisites
 
-- **BonusPage.jsx**: Manages bonus selection and application
-  - Shows available bonus options during bonus stage
-  - Provides a visual interface for selecting bonuses
-  - Confirms bonus selection with dialogs
-  - Displays bonus status and history
+- Python 3.11+
+- Node.js 20+
+- npm
 
-- **AboutPage.jsx**: Provides tournament information and rules
-  - Static content explaining tournament mechanics
-  - Rule explanations and guidelines for players
+### 1) Install dependencies
 
-## Tournament Flow
+```bash
+make bootstrap
+```
 
-1. **Betting Stage**: Teams place bets on who they think will win matches
-2. **Joust Stage**: Teams are paired for matches, and results are recorded
-3. **Bonus Stage**: Teams select special bonuses that provide advantages
-4. **Progression**: After each complete round, teams advance on the track
-5. **Victory**: First team to reach 12 points wins the tournament
+### 2) Run migrations
 
-## Optimizations
+```bash
+make migrate
+```
 
-- Selective polling: Each page only makes API calls when actively viewed
-- Shared context: Common data like round info is fetched once and shared
-- Real-time updates: UI components reflect the current tournament state
-- Responsive design: Mobile-optimized interface with context-aware navigation
+### 3) Start services (separate terminals)
 
-## Usage
+```bash
+make dev-backend
+make dev-frontend
+```
 
-Players access the app with a team identifier as a URL parameter (`player_id`), which associates them with their team. The navigation adapts to the current tournament stage, highlighting the relevant actions and information.
+Then open the Vite URL (usually `http://localhost:5173`).
+
+### 4) Optional checks
+
+```bash
+make test
+make lint-frontend
+```
+
+---
+
+## Starting a new web app from this template
+
+1. **Rename the project/app** naming in `backend/app/settings.py`, `frontend/package.json`, and README title.
+2. **Replace domain layer** in `backend/api/models.py`, migrations, serializers, and views.
+3. **Refit API services** in `frontend/src/services/tournamentService.js` (rename file if desired).
+4. **Replace example pages** under `frontend/src/components/pages/` with product screens.
+5. **Keep structure**, not content: preserve separation between pages, API service, and context store.
+6. Add CI/CD and environment-specific settings once your product scope is defined.
+
+---
+
+## Heroku setup/deploy
+
+### One-time setup
+
+```bash
+export APP_NAME=your-app-name
+make heroku-setup
+```
+
+### Deploy
+
+```bash
+make heroku-deploy
+```
+
+### Recommended env vars
+
+Set these with `heroku config:set`:
+
+- `SECRET_KEY`
+- `DEBUG=False`
+- `ALLOWED_HOSTS=<your-app>.herokuapp.com`
+- Any app-specific integration credentials
+
+---
+
+## Cleanup that was performed
+
+- Removed backup dump folders and temporary data exports.
+- Removed tournament-specific assets/pages/business logic.
+- Replaced with concise example API + UI that you can repurpose quickly.

@@ -1,11 +1,13 @@
 {
-    "name": "tournament-app",
-    "version": "1.0.0",
-    "scripts": {
-      "build": "cd frontend && npm install --include=dev && npm run build"
-    },
-    "engines": {
-      "node": ">=18"
-    },
-    "cacheDirectories": ["frontend/node_modules"]
-  }
+  "name": "webapp-template",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm install --include=dev && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "cacheDirectories": [
+    "frontend/node_modules"
+  ]
+}

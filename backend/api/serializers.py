@@ -1,45 +1,64 @@
 from rest_framework import serializers
-from .models import Team, Round, Game, Odds, Bet, Bonus
+
+from .models import ActivityLog, WorkItem, Workspace
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Team
-        fields = '__all__'
+        model = Workspace
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "slug", "created_at", "updated_at")
 
-class RoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Round
-        fields = '__all__'
 
-class GameSerializer(serializers.ModelSerializer):
-    team1_details = TeamSerializer(source='team1', read_only=True)
-    team2_details = TeamSerializer(source='team2', read_only=True)
-    round_details = RoundSerializer(source='round', read_only=True)
-    
-    class Meta:
-        model = Game
-        fields = '__all__'
+class WorkItemSerializer(serializers.ModelSerializer):
+    workspace_slug = serializers.CharField(source="workspace.slug", read_only=True)
+    status_label = serializers.CharField(source="get_status_display", read_only=True)
+    priority_label = serializers.CharField(source="get_priority_display", read_only=True)
 
-class OddsSerializer(serializers.ModelSerializer):
-    round_details = RoundSerializer(source='round', read_only=True)
-    team_details = TeamSerializer(source='team', read_only=True)
-    
     class Meta:
-        model = Odds
-        fields = '__all__'
+        model = WorkItem
+        fields = (
+            "id",
+            "workspace",
+            "workspace_slug",
+            "title",
+            "summary",
+            "owner",
+            "status",
+            "status_label",
+            "priority",
+            "priority_label",
+            "due_date",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at")
 
-class BetSerializer(serializers.ModelSerializer):
-    team_details = TeamSerializer(source='team', read_only=True)
-    bet_on_team_details = TeamSerializer(source='bet_on_team', read_only=True)
-    odds_details = OddsSerializer(source='odds', read_only=True)
-    round_details = RoundSerializer(source='round', read_only=True)
-    
-    class Meta:
-        model = Bet
-        fields = '__all__'
 
-class BonusSerializer(serializers.ModelSerializer):
+class ActivityLogSerializer(serializers.ModelSerializer):
+    workspace_slug = serializers.CharField(source="workspace.slug", read_only=True)
+    item_title = serializers.CharField(source="item.title", read_only=True)
+    action_label = serializers.CharField(source="get_action_display", read_only=True)
+
     class Meta:
-        model = Bonus
-        fields = ('id', 'team', 'round', 'finished', 'description', 'bonus_type', 'bonus_target', 'created')
+        model = ActivityLog
+        fields = (
+            "id",
+            "workspace",
+            "workspace_slug",
+            "item",
+            "item_title",
+            "action",
+            "action_label",
+            "message",
+            "metadata",
+            "created_at",
+        )
+        read_only_fields = fields

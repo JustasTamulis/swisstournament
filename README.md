@@ -1,84 +1,197 @@
-# Tournament App
+# Web App Template (Django + React)
 
-A real-time competitive tournament application that facilitates multi-stage competition between teams.
+A clean full-stack starter template for future web apps.
 
-## Overview
+It ships with:
+- A Django REST API (`/api/...`) that demonstrates CRUD, filtering, aggregate endpoints, and custom actions.
+- A React frontend that demonstrates dashboard, form submission, filtering, and optimistic refresh patterns.
+- A deployment-ready layout for Heroku with `Procfile`, `runtime.txt`, and static asset serving via WhiteNoise.
 
-This application manages a tournament where teams compete through a series of rounds, each consisting of three stages: betting, jousting, and bonus selection. Teams progress along a race track, and the first to reach 12 points wins.
+## What The Example App Demonstrates
 
-## Architecture
+The template domain is intentionally generic:
+- `Workspace`: top-level container.
+- `WorkItem`: example entity with status transitions (`backlog -> in_progress -> review -> done`).
+- `ActivityLog`: audit-style activity feed.
 
-The application is built with a Django REST Framework backend and React frontend.
+Example capabilities included:
+- List/create records.
+- Filter by query params.
+- Custom endpoint for transition logic (`POST /api/items/<id>/advance-status/`).
+- Aggregated summary endpoint (`GET /api/overview/`).
+- Bootstrap endpoint to generate demo data (`POST /api/bootstrap/`).
 
-### Backend
+## Quick Start
 
-- **Data Models**: Teams, rounds, games, bets, odds, and bonuses
-- **Tournament Logic**: Round progression, game pairing, bet processing, and bonus application
-- **API Endpoints**: RESTful services for all tournament actions and data access
+## 1. Prerequisites
+- Python 3.12+
+- Node.js 20+
+- npm
 
-### Frontend
+## 2. Configure environment
 
-#### Helper Files
+```bash
+cp .env.example .env
+```
 
-- **tournamentService.js**: Handles all API communication with the backend, providing methods for fetching tournament data and submitting player actions. Includes functions for retrieving teams, rounds, games, placing bets, marking game results, and applying bonuses.
+## 3. Install dependencies
 
-- **TournamentContext.jsx**: A React context that maintains shared state across components. It:
-  - Centralizes round information fetching to avoid duplicate requests
-  - Tracks the current page being viewed
-  - Provides the `useTournament` hook for accessing shared state
-  - Implements efficient polling by only fetching round info globally
+```bash
+make install
+```
 
-- **TopNav.jsx**: The navigation component that:
-  - Renders the app's main navigation bar
-  - Highlights the current page and tournament stage
-  - Preserves URL parameters when navigating
-  - Displays the current round and stage information
-  - Utilizes the TournamentContext for real-time updates
+## 4. Run backend and frontend (two terminals)
 
-#### Pages
+Terminal 1:
+```bash
+make run-backend
+```
 
-- **TrackPage.jsx**: Visualizes the race track with all teams' progress
-  - Shows teams sorted by distance with the player's team highlighted
-  - Animates position changes when teams advance
-  - Only polls for updates when actively viewed
+Terminal 2:
+```bash
+make run-frontend
+```
 
-- **BetPage.jsx**: Manages the betting stage functionality
-  - Displays all teams with their odds and the player's current bets
-  - Shows available bets and enables betting actions during betting stage
-  - Confirms bet placement with dialog prompts
-  - Updates in real-time when bets are placed
+App URLs:
+- Frontend dev server: `http://127.0.0.1:5173`
+- Backend API: `http://127.0.0.1:8000/api/`
 
-- **JoustPage.jsx**: Handles the jousting match functionality
-  - Shows upcoming opponents during joust stage
-  - Provides UI for recording match results (win/lose)
-  - Adapts to the current tournament stage
-  - Displays appropriate messages when matches are completed
+## 5. Load sample data (optional)
 
-- **BonusPage.jsx**: Manages bonus selection and application
-  - Shows available bonus options during bonus stage
-  - Provides a visual interface for selecting bonuses
-  - Confirms bonus selection with dialogs
-  - Displays bonus status and history
+```bash
+make bootstrap
+```
 
-- **AboutPage.jsx**: Provides tournament information and rules
-  - Static content explaining tournament mechanics
-  - Rule explanations and guidelines for players
+Or use the "Load Demo Data" button on the Overview page.
 
-## Tournament Flow
+## Project Structure
 
-1. **Betting Stage**: Teams place bets on who they think will win matches
-2. **Joust Stage**: Teams are paired for matches, and results are recorded
-3. **Bonus Stage**: Teams select special bonuses that provide advantages
-4. **Progression**: After each complete round, teams advance on the track
-5. **Victory**: First team to reach 12 points wins the tournament
+```text
+.
+├── backend/
+│   ├── api/
+│   │   ├── models.py        # Workspace, WorkItem, ActivityLog
+│   │   ├── serializers.py   # API representations
+│   │   ├── views.py         # Viewsets + custom endpoints
+│   │   ├── urls.py          # API routes
+│   │   └── tests.py         # API tests
+│   ├── app/
+│   │   ├── settings.py      # Env-driven Django config
+│   │   └── urls.py          # API + frontend catch-all route
+│   └── manage.py
+├── frontend/
+│   ├── src/
+│   │   ├── context/TemplateContext.jsx
+│   │   ├── pages/
+│   │   │   ├── OverviewPage.jsx
+│   │   │   ├── WorkItemsPage.jsx
+│   │   │   └── ActivityPage.jsx
+│   │   ├── services/templateApi.js
+│   │   ├── App.jsx
+│   │   └── index.css
+│   └── vite.config.js
+├── static/                 # Generated by frontend build
+├── makefile
+├── Procfile
+└── README.md
+```
 
-## Optimizations
+## Frontend/Backend Interaction
 
-- Selective polling: Each page only makes API calls when actively viewed
-- Shared context: Common data like round info is fetched once and shared
-- Real-time updates: UI components reflect the current tournament state
-- Responsive design: Mobile-optimized interface with context-aware navigation
+Data flow in development:
+1. React calls `/api/...` using Axios (`frontend/src/services/templateApi.js`).
+2. Vite proxies `/api` requests to Django (`frontend/vite.config.js`).
+3. Django viewsets and endpoints return JSON from DRF.
 
-## Usage
+Data flow in production (Heroku):
+1. Frontend is built into `./static` (`make build-frontend` or `npm run build`).
+2. Django serves built files via WhiteNoise.
+3. Non-API routes fall back to `index.html` so React Router handles page navigation.
 
-Players access the app with a team identifier as a URL parameter (`player_id`), which associates them with their team. The navigation adapts to the current tournament stage, highlighting the relevant actions and information.
+## Makefile Commands
+
+```bash
+make help
+```
+
+Common workflow:
+- `make install` - install backend + frontend dependencies.
+- `make run-backend` - run Django server.
+- `make run-frontend` - run Vite dev server.
+- `make migrate` - apply database migrations.
+- `make test` - run backend tests.
+- `make build` - build frontend and collect static files.
+- `make clean` - remove local generated artifacts.
+
+## API Reference (Template)
+
+- `GET /api/health/`
+- `GET /api/overview/`
+- `POST /api/bootstrap/`
+- `GET/POST /api/workspaces/`
+- `GET/POST /api/items/`
+- `POST /api/items/<id>/advance-status/`
+- `GET /api/activity/`
+
+Example filters:
+- `/api/items/?workspace=starter-workspace`
+- `/api/items/?status=review`
+- `/api/activity/?limit=10`
+
+## How To Start A New App From This Template
+
+1. Replace model names/fields in `backend/api/models.py`.
+2. Adjust serializers and endpoints in `backend/api/serializers.py` and `backend/api/views.py`.
+3. Update frontend pages/services to match new API contracts.
+4. Update `.env.example` and README with your app-specific variables and flows.
+5. Add new tests in `backend/api/tests.py` for core business logic.
+
+## Heroku Setup Guide
+
+## 1. Create app and Postgres addon
+
+```bash
+heroku create <your-app-name>
+heroku addons:create heroku-postgresql:mini --app <your-app-name>
+```
+
+## 2. Set required config vars
+
+```bash
+make HEROKU_APP=<your-app-name> heroku-config
+```
+
+Then set a real secret key value (replace placeholder):
+
+```bash
+heroku config:set DJANGO_SECRET_KEY='<real-secret>' --app <your-app-name>
+```
+
+## 3. Deploy
+
+```bash
+git push heroku main
+```
+
+## 4. Run migrations (if release phase did not run)
+
+```bash
+heroku run python backend/manage.py migrate --app <your-app-name>
+```
+
+## 5. Verify
+
+```bash
+heroku logs --tail --app <your-app-name>
+```
+
+Health check:
+```bash
+curl https://<your-app-name>.herokuapp.com/api/health/
+```
+
+## Notes
+
+- `Procfile` runs migrations during release and serves app via Gunicorn.
+- `runtime.txt` pins Python version for Heroku.
+- `app.json` supports Heroku "Deploy to Heroku" style setup.

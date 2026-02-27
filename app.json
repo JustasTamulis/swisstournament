@@ -1,19 +1,29 @@
 {
-  "name": "Pizzapp",
-  "description": "A mash up test of django, react, and heroku",
-  "repository": "https://github.com/heroku/python-getting-started",
-  "website": "https://devcenter.heroku.com/articles/getting-started-with-python",
-  "keywords": ["python", "django", "react"],
+  "name": "django-react-webapp-template",
+  "description": "Starter template for Django REST + React on Heroku",
+  "repository": "https://github.com/your-org/your-template-repo",
+  "keywords": ["python", "django", "react", "template"],
   "env": {
     "DJANGO_SECRET_KEY": {
-      "description": "The secret key for the Django application.",
+      "description": "Secret key used by Django.",
       "generator": "secret"
+    },
+    "DJANGO_DEBUG": {
+      "description": "Set to 0 in production.",
+      "value": "0"
     }
   },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": ["heroku-postgresql:mini"],
   "environments": {
     "test": {
       "scripts": {
-        "test": "./backend/manage.py test --debug-mode"
+        "test": "python backend/manage.py test"
       }
     }
   }

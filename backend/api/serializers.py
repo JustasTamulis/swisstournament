@@ -1,45 +1,35 @@
 from rest_framework import serializers
-from .models import Team, Round, Game, Odds, Bet, Bonus
+
+from .models import ActivityLog, Feature, Stage
 
 
-class TeamSerializer(serializers.ModelSerializer):
+class StageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Team
-        fields = '__all__'
+        model = Stage
+        fields = ["id", "name", "order", "description", "is_active"]
 
-class RoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Round
-        fields = '__all__'
 
-class GameSerializer(serializers.ModelSerializer):
-    team1_details = TeamSerializer(source='team1', read_only=True)
-    team2_details = TeamSerializer(source='team2', read_only=True)
-    round_details = RoundSerializer(source='round', read_only=True)
-    
-    class Meta:
-        model = Game
-        fields = '__all__'
+class FeatureSerializer(serializers.ModelSerializer):
+    stage_name = serializers.CharField(source="stage.name", read_only=True)
 
-class OddsSerializer(serializers.ModelSerializer):
-    round_details = RoundSerializer(source='round', read_only=True)
-    team_details = TeamSerializer(source='team', read_only=True)
-    
     class Meta:
-        model = Odds
-        fields = '__all__'
+        model = Feature
+        fields = [
+            "id",
+            "title",
+            "summary",
+            "owner",
+            "status",
+            "stage",
+            "stage_name",
+            "updated_at",
+            "created_at",
+        ]
 
-class BetSerializer(serializers.ModelSerializer):
-    team_details = TeamSerializer(source='team', read_only=True)
-    bet_on_team_details = TeamSerializer(source='bet_on_team', read_only=True)
-    odds_details = OddsSerializer(source='odds', read_only=True)
-    round_details = RoundSerializer(source='round', read_only=True)
-    
-    class Meta:
-        model = Bet
-        fields = '__all__'
 
-class BonusSerializer(serializers.ModelSerializer):
+class ActivityLogSerializer(serializers.ModelSerializer):
+    feature_title = serializers.CharField(source="feature.title", read_only=True)
+
     class Meta:
-        model = Bonus
-        fields = ('id', 'team', 'round', 'finished', 'description', 'bonus_type', 'bonus_target', 'created')
+        model = ActivityLog
+        fields = ["id", "message", "feature", "feature_title", "created_at"]

@@ -1,103 +1,64 @@
-import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
-import { getRoundInfo, getTournamentSettings } from '../services/tournamentService';
-import { useLocation } from 'react-router-dom';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { getActivity, getFeatures, getStages, getSummary, seedTemplateData } from '../services/tournamentService';
 
-export const TournamentContext = createContext();
+const AppTemplateContext = createContext(null);
 
-export const TournamentProvider = ({ children }) => {
-    const [roundInfo, setRoundInfo] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [roundChanged, setRoundChanged] = useState(false);
-    const [finishDistance, setFinishDistance] = useState(12); // Temporary default
-    const previousRoundInfoRef = useRef(null);
-    
-    const location = useLocation();
-    
-    // Extract current page from path
-    const currentPage = location.pathname.split('/').filter(Boolean)[0] || 'track';
-    
-    // Fetch tournament settings like finish distance
-    const fetchTournamentSettings = useCallback(async () => {
-        try {
-            const data = await getTournamentSettings();
-            if (data && data.finish_distance) {
-                setFinishDistance(data.finish_distance);
-            }
-        } catch (err) {
-            console.error("Error fetching tournament settings:", err);
-        }
-    }, []);
+export const AppTemplateProvider = ({ children }) => {
+  const [summary, setSummary] = useState(null);
+  const [stages, setStages] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [activity, setActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    // Fetch round info - this is common data needed by all pages
-    const fetchRoundInfo = useCallback(async () => {
-        try {
-            const data = await getRoundInfo();
-            
-            // Check if round or stage has changed - only trigger changes when needed
-            if (previousRoundInfoRef.current && (
-                previousRoundInfoRef.current.number !== data.number || 
-                previousRoundInfoRef.current.stage !== data.stage
-            )) {
-                console.log('Round or stage changed - triggering updates');
-                setRoundChanged(true);
-                // Reset the flag after a delay to allow components to react
-                setTimeout(() => setRoundChanged(false), 200);
-            }
-            
-            // Update ref for future comparisons
-            previousRoundInfoRef.current = {...data};
-            
-            // Ensure we're working with round number, not ID
-            setRoundInfo(data);
-            setError(null);
-        } catch (err) {
-            console.error("Error fetching round info:", err);
-            setError("Failed to fetch tournament information");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-    
-    // Initial fetch on component mount
-    useEffect(() => {
-        // Get tournament settings first
-        fetchTournamentSettings();
-        
-        // Then get round info
-        fetchRoundInfo();
-        
-        // Set up polling for round info (this runs constantly but is lightweight)
-        const roundInfoInterval = setInterval(fetchRoundInfo, 10000);
-        
-        return () => {
-            clearInterval(roundInfoInterval);
-        };
-    }, [fetchRoundInfo, fetchTournamentSettings]);
-    
-    // Context value
-    const value = {
-        roundInfo,
-        loading,
-        error,
-        currentPage,
-        roundChanged,
-        finishDistance,
-        refreshRoundInfo: fetchRoundInfo
-    };
-    
-    return (
-        <TournamentContext.Provider value={value}>
-            {children}
-        </TournamentContext.Provider>
-    );
-};
-
-// Custom hook to use the tournament context
-export const useTournament = () => {
-    const context = React.useContext(TournamentContext);
-    if (context === undefined) {
-        throw new Error('useTournament must be used within a TournamentProvider');
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [summaryData, stagesData, featuresData, activityData] = await Promise.all([
+        getSummary(),
+        getStages(),
+        getFeatures(),
+        getActivity(),
+      ]);
+      setSummary(summaryData);
+      setStages(stagesData);
+      setFeatures(featuresData);
+      setActivity(activityData);
+    } finally {
+      setLoading(false);
     }
-    return context;
+  }, []);
+
+  const initializeTemplate = useCallback(async () => {
+    try {
+      await seedTemplateData();
+    } catch {
+      // Seed endpoint may return 400 if data already exists; safe to ignore for template bootstrap.
+    }
+    await refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    initializeTemplate();
+  }, [initializeTemplate]);
+
+  return (
+    <AppTemplateContext.Provider value={{ summary, stages, features, activity, loading, refresh }}>
+      {children}
+    </AppTemplateContext.Provider>
+  );
 };
+
+AppTemplateProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+const useAppTemplate = () => {
+  const context = useContext(AppTemplateContext);
+  if (!context) {
+    throw new Error('useAppTemplate must be used within AppTemplateProvider');
+  }
+  return context;
+};
+
+export default useAppTemplate;
